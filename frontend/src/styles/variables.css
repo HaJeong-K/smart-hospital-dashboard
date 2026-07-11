@@ -1,0 +1,144 @@
+/* ==========================================================
+   SMART HOSPITAL DESIGN SYSTEM
+   Theme Variables
+========================================================== */
+
+/* ===========================
+   LIGHT MODE
+=========================== */
+
+:root {
+
+    /* Background */
+
+    --background: #f4f6f9;
+
+    --surface: #ffffff;
+
+    --surface2: #eef2f7;
+
+    --panel: #ffffff;
+
+    --panel-hover: #f8fafc;
+
+    --panel-selected: #fee2e2;
+
+    /* Border */
+
+    --border: #d0d5dd;
+
+    --room-border: #94a3b8;
+
+    /* Text */
+
+    --text: #1d2939;
+
+    --text-secondary: #667085;
+
+    /* Brand */
+
+    --primary: #dc2626;
+
+    --danger: #ef4444;
+
+    --warning: #f59e0b;
+
+    --success: #22c55e;
+
+    /* Room Status */
+
+    --room-normal: #22c55e;
+
+    --room-warning: #f59e0b;
+
+    --room-danger: #ef4444;
+
+    /* Hospital Map */
+
+    --map-background: #f8fafc;
+
+    --corridor: #e2e8f0;
+
+    --nurse-room: #bfdbfe;
+
+    --elevator: #fde68a;
+
+    --stairs: #d1d5db;
+
+    /* Card */
+
+    --shadow:
+        0 8px 24px rgba(15, 23, 42, 0.08);
+
+}
+
+
+
+/* ===========================
+   DARK MODE
+=========================== */
+
+[data-theme="dark"] {
+
+    /* Background */
+
+    --background: #0f172a;
+
+    --surface: #172030;
+
+    --surface2: #1f2937;
+
+    --panel: #172030;
+
+    --panel-hover: #273449;
+
+    --panel-selected: #3b1b1b;
+
+    /* Border */
+
+    --border: #334155;
+
+    --room-border: #cbd5e1;
+
+    /* Text */
+
+    --text: #f8fafc;
+
+    --text-secondary: #94a3b8;
+
+    /* Brand */
+
+    --primary: #ef4444;
+
+    --danger: #ef4444;
+
+    --warning: #f59e0b;
+
+    --success: #22c55e;
+
+    /* Room Status */
+
+    --room-normal: #22c55e;
+
+    --room-warning: #f59e0b;
+
+    --room-danger: #ef4444;
+
+    /* Hospital Map */
+
+    --map-background: #101827;
+
+    --corridor: #243244;
+
+    --nurse-room: #1d4ed8;
+
+    --elevator: #ca8a04;
+
+    --stairs: #475569;
+
+    /* Card */
+
+    --shadow:
+        0 10px 28px rgba(0,0,0,0.35);
+
+}
