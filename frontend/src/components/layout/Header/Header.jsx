@@ -34,10 +34,10 @@ function Header() {
 
                 <div>
 
-                    <h2>Smart Hospital Dashboard</h2>
+                    <h2>시니어 위험 감지 대시보드</h2>
 
                     <span>
-                        60GHz mmWave Monitoring System
+                        60GHz mmWave 모니터링 시스템
                     </span>
 
                 </div>

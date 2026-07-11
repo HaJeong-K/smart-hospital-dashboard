@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import hospital from "../config/hospital.config";
 
@@ -8,23 +8,66 @@ import FloorCanvas from "../components/floor/FloorCanvas";
 import PatientPanel from "../components/patient/PatientPanel";
 import AlarmPanel from "../components/alarm/AlarmPanel";
 
+import EventTimeline from "../components/event/EventTimeline";
+
 import KpiPanel from "../components/dashboard/KpiPanel";
+import TopToolbar from "../components/dashboard/TopToolbar";
+import SystemStatus from "../components/dashboard/SystemStatus";
+import RoomFilter from "../components/dashboard/RoomFilter";
 
-function Dashboard(){
+import NotificationToast from "../components/common/NotificationToast";
 
-    const [floor,setFloor]=useState(
+function Dashboard() {
 
+    const [floor, setFloor] = useState(
         hospital.floors[2]
-
     );
 
-    const [selectedRoom,setSelectedRoom]=useState(null);
+    const [selectedRoom, setSelectedRoom] = useState(
+        null
+    );
 
-    return(
+    const [filter, setFilter] = useState("all");
+
+    const filteredFloor = useMemo(() => {
+
+        if (filter === "all") {
+
+            return floor;
+
+        }
+
+        return {
+
+            ...floor,
+
+            rooms: floor.rooms.filter(
+
+                room => room.status.room === filter
+
+            ),
+
+        };
+
+    }, [floor, filter]);
+
+    return (
 
         <>
 
-            <KpiPanel/>
+            <SystemStatus />
+
+            <KpiPanel />
+
+            <TopToolbar />
+
+            <RoomFilter
+
+                selected={filter}
+
+                onChange={setFilter}
+
+            />
 
             <div className="dashboard">
 
@@ -34,7 +77,7 @@ function Dashboard(){
 
                     selectedFloor={floor}
 
-                    onChange={(value)=>{
+                    onChange={(value) => {
 
                         setFloor(value);
 
@@ -46,7 +89,7 @@ function Dashboard(){
 
                 <FloorCanvas
 
-                    floor={floor}
+                    floor={filteredFloor}
 
                     onRoomClick={setSelectedRoom}
 
@@ -60,11 +103,15 @@ function Dashboard(){
 
                     />
 
-                    <AlarmPanel/>
+                    <AlarmPanel />
+
+                    <EventTimeline />
 
                 </div>
 
             </div>
+
+            <NotificationToast />
 
         </>
 

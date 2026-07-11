@@ -13,10 +13,10 @@ import {
     Image,
 } from "lucide-react";
 
-import EditorToolbar from "../components/editor/EditorToolbar";
-import EditorCanvas from "../components/editor/EditorCanvas";
-import RoomEditor from "../components/editor/RoomEditor";
-import RoomProperty from "../components/editor/RoomProperty";
+import EditorToolbar from "./EditorToolbar";
+import EditorCanvas from "./EditorCanvas";
+import RoomEditor from "./RoomEditor";
+import RoomProperty from "./RoomProperty";
 
 function FloorEditor() {
 
@@ -26,21 +26,37 @@ function FloorEditor() {
 
     const { state } = useLocation();
 
-    const floor = state?.floor;
+    const floor = state?.floor || {
+
+        id: floorId,
+
+        name: "Floor",
+
+        image: null,
+
+        rooms: [],
+
+    };
 
     const [background, setBackground] = useState(
 
-        floor?.image || null
+        floor.image
 
     );
 
     const [rooms, setRooms] = useState(
 
-        floor?.rooms || []
+        floor.rooms
 
     );
 
     const [selectedRoom, setSelectedRoom] = useState(null);
+
+    const [zoom, setZoom] = useState(100);
+
+    const [grid, setGrid] = useState(true);
+
+    const [snap, setSnap] = useState(false);
 
     const roomCount = rooms.length;
 
@@ -72,16 +88,29 @@ function FloorEditor() {
 
             floorId,
 
-            rooms,
-
             background,
+
+            rooms,
 
         });
 
-        alert("층 정보가 저장되었습니다.");
+        alert("저장되었습니다.");
 
     };
-        return (
+
+    const undo = () => {
+
+        console.log("UNDO");
+
+    };
+
+    const redo = () => {
+
+        console.log("REDO");
+
+    };
+
+    return (
 
         <div className="editor-page">
 
@@ -93,17 +122,21 @@ function FloorEditor() {
 
                         className="toolbar-btn"
 
-                        onClick={() => navigate("/hospital")}
+                        onClick={() =>
+
+                            navigate("/hospital")
+
+                        }
 
                     >
 
                         <ArrowLeft size={18} />
 
-                        병원 관리
+                        병원관리
 
                     </button>
 
-                    <div className="editor-title">
+                    <div>
 
                         <h1>
 
@@ -111,11 +144,15 @@ function FloorEditor() {
 
                         </h1>
 
-                        <p>
+                        <span>
 
-                            Floor ID : {floorId}
+                            Floor ID :
 
-                        </p>
+                            {" "}
+
+                            {floorId}
+
+                        </span>
 
                     </div>
 
@@ -155,6 +192,8 @@ function FloorEditor() {
 
                         className="toolbar-btn"
 
+                        onClick={undo}
+
                     >
 
                         <Undo2 size={18} />
@@ -166,6 +205,8 @@ function FloorEditor() {
                     <button
 
                         className="toolbar-btn"
+
+                        onClick={redo}
 
                     >
 
@@ -197,11 +238,11 @@ function FloorEditor() {
 
                 <div>
 
-                    <Building2 size={20} />
+                    <Building2 size={18} />
 
                     <strong>
 
-                        {floor?.name || "Floor"}
+                        {floor.name}
 
                     </strong>
 
@@ -227,13 +268,27 @@ function FloorEditor() {
 
             <EditorToolbar
 
-                background={background}
-
                 setBackground={setBackground}
 
                 rooms={rooms}
 
                 setRooms={setRooms}
+
+                zoom={zoom}
+
+                setZoom={setZoom}
+
+                grid={grid}
+
+                setGrid={setGrid}
+
+                snap={snap}
+
+                setSnap={setSnap}
+
+                onUndo={undo}
+
+                onRedo={redo}
 
             />
 
@@ -261,6 +316,12 @@ function FloorEditor() {
 
                     setSelectedRoom={setSelectedRoom}
 
+                    zoom={zoom}
+
+                    grid={grid}
+
+                    snap={snap}
+
                 />
 
                 <RoomProperty
@@ -272,15 +333,16 @@ function FloorEditor() {
                 />
 
             </div>
-                        {
+
+            {
 
                 rooms.length === 0 && (
 
                     <div className="editor-empty-banner">
 
-                        병실이 아직 생성되지 않았습니다.
+                        병실이 없습니다.
 
-                        좌측 툴바에서 Polygon을 그려 병실을 생성하세요.
+                        Polygon을 그려 병실을 생성하세요.
 
                     </div>
 
@@ -298,7 +360,7 @@ function FloorEditor() {
 
                         {" "}
 
-                        {floor?.name || "-"}
+                        {floor.name}
 
                     </span>
 
@@ -335,14 +397,6 @@ function FloorEditor() {
                 </div>
 
                 <div className="editor-footer-right">
-
-                    <span>
-
-                        Status
-
-                    </span>
-
-                    <span className="status-dot success"></span>
 
                     <span>
 

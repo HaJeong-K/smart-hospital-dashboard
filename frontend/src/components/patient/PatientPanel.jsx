@@ -1,30 +1,63 @@
 import {
+    Bed,
+    UserRound,
     HeartPulse,
     Activity,
-    UserRound,
-    BedDouble,
-    Wifi,
+    Calendar,
+    Phone,
 } from "lucide-react";
 
 function PatientPanel({ room }) {
+
     if (!room) {
+
         return (
-            <aside className="patient-panel empty">
 
-                <h2>Patient Information</h2>
+            <div className="patient-panel empty">
 
-                <p>병실을 선택하세요.</p>
+                <div className="patient-empty">
 
-            </aside>
+                    <div className="patient-empty-left">
+
+                        <div className="patient-empty-icon">
+
+                            <UserRound size={34} />
+
+                        </div>
+
+                        <h2>Patient Information</h2>
+
+                        <div className="patient-line"></div>
+
+                    </div>
+
+                    <div className="patient-empty-right">
+
+                        <Bed size={90} />
+
+                        <p>병실을 선택하세요.</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         );
+
     }
 
     return (
-        <aside className="patient-panel">
+
+        <div className="patient-panel">
 
             <div className="patient-header">
 
-                <UserRound size={42} />
+                <div className="patient-avatar">
+
+                    <UserRound size={34} />
+
+                </div>
 
                 <div>
 
@@ -40,17 +73,27 @@ function PatientPanel({ room }) {
 
                 <div className="patient-row">
 
-                    <BedDouble size={18} />
+                    <HeartPulse size={18} />
 
-                    <span>병실</span>
+                    <span>심박수</span>
 
-                    <strong>{room.roomNo}</strong>
+                    <strong>76 BPM</strong>
 
                 </div>
 
                 <div className="patient-row">
 
-                    <UserRound size={18} />
+                    <Activity size={18} />
+
+                    <span>호흡수</span>
+
+                    <strong>18 rpm</strong>
+
+                </div>
+
+                <div className="patient-row">
+
+                    <Calendar size={18} />
 
                     <span>나이</span>
 
@@ -60,52 +103,20 @@ function PatientPanel({ room }) {
 
                 <div className="patient-row">
 
-                    <HeartPulse size={18} />
+                    <Phone size={18} />
 
-                    <span>심박수</span>
+                    <span>보호자</span>
 
-                    <strong>
-
-                        {room.status.heartRate ?? "--"} BPM
-
-                    </strong>
-
-                </div>
-
-                <div className="patient-row">
-
-                    <Activity size={18} />
-
-                    <span>호흡상태</span>
-
-                    <strong>
-
-                        {room.status.breath ?? "-"}
-
-                    </strong>
-
-                </div>
-
-                <div className="patient-row">
-
-                    <Wifi size={18} />
-
-                    <span>센서</span>
-
-                    <strong>
-
-                        {room.status.online
-                            ? "ONLINE"
-                            : "OFFLINE"}
-
-                    </strong>
+                    <strong>등록됨</strong>
 
                 </div>
 
             </div>
 
-        </aside>
+        </div>
+
     );
+
 }
 
 export default PatientPanel;

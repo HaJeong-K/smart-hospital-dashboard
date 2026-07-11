@@ -1,7 +1,10 @@
 import FloorImage from "./FloorImage";
 
 import RoomOverlay from "../room/RoomOverlay";
+
 import SensorOverlay from "../sensor/SensorOverlay";
+
+import FloorHeader from "../dashboard/FloorHeader";
 
 function FloorCanvas({
 
@@ -9,11 +12,17 @@ function FloorCanvas({
 
     onRoomClick,
 
-}) {
+}){
 
-    return (
+    return(
 
         <div className="floor-canvas">
+
+            <FloorHeader
+
+                floor={floor}
+
+            />
 
             <svg
 
