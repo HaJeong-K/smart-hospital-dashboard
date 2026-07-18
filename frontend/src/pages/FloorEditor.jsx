@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -18,6 +18,8 @@ import EditorCanvas from "../components/editor/EditorCanvas";
 import RoomEditor from "../components/editor/RoomEditor";
 import RoomProperty from "../components/editor/RoomProperty";
 
+import { useDashboardStore } from "../store/useDashboardStore";
+
 function FloorEditor() {
 
     const navigate = useNavigate();
@@ -26,28 +28,26 @@ function FloorEditor() {
 
     const { state } = useLocation();
 
-    const floor = state?.floor || {
+    const floors = useDashboardStore((s) => s.hospital.floors);
+    const saveFloorRooms = useDashboardStore((s) => s.saveFloorRooms);
 
-        id: floorId,
-
-        name: "Floor",
-
-        image: null,
-
-        rooms: [],
-
-    };
+    // store에 이미 존재하는 층이면 그 데이터가 최신 정본(正本)이다.
+    // (새로 만든 층으로 처음 진입하는 극히 드문 케이스에 한해 router state로 폴백)
+    const floor =
+        floors.find((f) => f.id === floorId) ||
+        state?.floor || {
+            id: floorId,
+            name: "Floor",
+            floorMap: { type: "image", src: null, width: 1000, height: 700 },
+            rooms: [],
+        };
 
     const [background, setBackground] = useState(
-
-        floor.image
-
+        floor.floorMap?.src || floor.image || null
     );
 
     const [rooms, setRooms] = useState(
-
         floor.rooms
-
     );
 
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -57,6 +57,8 @@ function FloorEditor() {
     const [grid, setGrid] = useState(true);
 
     const [snap, setSnap] = useState(false);
+
+    const canvasRef = useRef(null);
 
     const roomCount = rooms.length;
 
@@ -78,35 +80,27 @@ function FloorEditor() {
 
     const bedCount = useMemo(() => {
 
-        return rooms.length;
+        return rooms.filter((room) => room.type === "patient" || !room.type).length;
 
     }, [rooms]);
 
     const saveFloor = () => {
 
-        console.log({
+        saveFloorRooms(floorId, rooms, { src: background });
 
-            floorId,
-
-            background,
-
-            rooms,
-
-        });
-
-        alert("저장되었습니다.");
+        alert("저장되었습니다. 대시보드에도 즉시 반영됩니다.");
 
     };
 
     const undo = () => {
 
-        console.log("UNDO");
+        canvasRef.current?.undo();
 
     };
 
     const redo = () => {
 
-        console.log("REDO");
+        canvasRef.current?.redo();
 
     };
 
@@ -302,9 +296,13 @@ function FloorEditor() {
 
                     setSelectedRoom={setSelectedRoom}
 
+                    setRooms={setRooms}
+
                 />
 
                 <EditorCanvas
+
+                    ref={canvasRef}
 
                     background={background}
 
@@ -317,6 +315,8 @@ function FloorEditor() {
                     setSelectedRoom={setSelectedRoom}
 
                     zoom={zoom}
+
+                    onZoomChange={setZoom}
 
                     grid={grid}
 

@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
 import PolygonLayer from "./PolygonLayer";
+import { createDrawnPatientRoom } from "../../data/floorsData";
 
 const GRID = 20;
 
@@ -27,29 +28,39 @@ function MiniMap({ background, rooms }) {
     );
 }
 
-function EditorCanvas({
-    background,
-    rooms,
-    setRooms,
-    selectedRoom,
-    setSelectedRoom,
-}) {
+// zoom(%), grid(표시 여부), snap(격자 스냅 여부)는 상위(FloorEditor)의 툴바 상태와 동기화되는
+// "제어(controlled)" 값이다. undo/redo는 ref를 통해 상위 툴바 버튼에서도 호출할 수 있도록
+// forwardRef + useImperativeHandle로 노출한다.
+// (이전에는 zoom/grid/snap props가 이 컴포넌트에서 아예 구독되지 않아 툴바 버튼이 캔버스에
+//  아무 영향을 주지 못했고, undo/redo 버튼도 console.log만 찍는 스텁이었다.)
+const EditorCanvas = forwardRef(function EditorCanvas(
+    {
+        background,
+        rooms,
+        setRooms,
+        selectedRoom,
+        setSelectedRoom,
+        zoom = 100,
+        onZoomChange = () => {},
+        grid = true,
+        snap = false,
+    },
+    ref,
+) {
     const svgRef = useRef(null);
     const wrapperRef = useRef(null);
 
     const [drawing, setDrawing] = useState(false);
     const [draft, setDraft] = useState([]);
-    const [scale, setScale] = useState(1);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [spacePressed, setSpacePressed] = useState(false);
     const [panning, setPanning] = useState(false);
     const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
-    const last = useRef({ x: 0, y: 0 });
+    const scale = zoom / 100;
+    const setScalePercent = (percent) => onZoomChange(Math.max(20, Math.min(500, Math.round(percent))));
 
-    // Date.now() 대신 ref 기반 증가 카운터로 room id를 생성한다.
-    // (렌더 경로에서 impure 함수를 직접 호출하지 않기 위함)
-    const nextRoomId = useRef(1);
+    const last = useRef({ x: 0, y: 0 });
 
     /* ===========================
        SPACE KEY (팬 모드 토글)
@@ -86,9 +97,10 @@ function EditorCanvas({
     };
 
     /* ===========================
-       GRID SNAP
+       GRID SNAP (snap prop이 켜져 있을 때만 격자에 맞춘다)
     =========================== */
     const snapPoint = (point) => {
+        if (!snap) return point;
         return {
             x: Math.round(point.x / GRID) * GRID,
             y: Math.round(point.y / GRID) * GRID,
@@ -136,8 +148,8 @@ function EditorCanvas({
         e.preventDefault();
         if (!e.ctrlKey) return;
 
-        const delta = e.deltaY < 0 ? 0.08 : -0.08;
-        setScale((prev) => Math.max(0.4, Math.min(5, prev + delta)));
+        const delta = e.deltaY < 0 ? 8 : -8;
+        setScalePercent(zoom + delta);
     };
 
     /* ===========================
@@ -165,20 +177,21 @@ function EditorCanvas({
         setRooms(redoStack.current.pop());
     };
 
+    // 상위 툴바(FloorEditor > EditorToolbar)의 Undo/Redo 버튼에서 호출할 수 있도록 노출
+    useImperativeHandle(ref, () => ({ undo, redo }));
+
     /* ===========================
        폴리곤 그리기
     =========================== */
     const finishPolygon = () => {
         if (draft.length < 3) return;
 
-        const room = {
-            id: nextRoomId.current++,
-            roomNo: `${rooms.length + 101}`,
-            polygon: draft.map((point) => [point.x / 1000, point.y / 700]),
-            patient: { name: "", age: 0 },
-            sensors: [],
-            status: { room: "normal" },
-        };
+        const id = `room-${Date.now()}`;
+        const room = createDrawnPatientRoom(
+            id,
+            `${rooms.length + 101}`,
+            draft.map((point) => [point.x / 1000, point.y / 700]),
+        );
 
         pushHistory();
         setRooms((prev) => [...prev, room]);
@@ -251,13 +264,14 @@ function EditorCanvas({
         return () => {
             window.removeEventListener("keydown", keyDown);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rooms, selectedRoom]);
 
     /* ===========================
        AUTO FIT
     =========================== */
     const fitScreen = () => {
-        setScale(1);
+        setScalePercent(100);
         setOffset({ x: 0, y: 0 });
     };
 
@@ -275,9 +289,11 @@ function EditorCanvas({
         <div className="editor-canvas-wrapper" ref={wrapperRef}>
             <div className="editor-topbar">
                 <div className="editor-info">
-                    <span>Zoom {(scale * 100).toFixed(0)}%</span>
+                    <span>Zoom {zoom}%</span>
                     <span>Rooms {rooms.length}</span>
                     <span>Draft {draft.length}</span>
+                    <span>Grid {grid ? "ON" : "OFF"}</span>
+                    <span>Snap {snap ? "ON" : "OFF"}</span>
                     <span>X {mouse.x.toFixed(0)}</span>
                     <span>Y {mouse.y.toFixed(0)}</span>
                 </div>
@@ -314,7 +330,7 @@ function EditorCanvas({
                 >
                     <g transform={`translate(${offset.x},${offset.y}) scale(${scale})`}>
                         {/* GRID */}
-                        <g>{gridLines}</g>
+                        {grid && <g>{gridLines}</g>}
 
                         {/* FLOOR IMAGE */}
                         {background && (
@@ -376,15 +392,13 @@ function EditorCanvas({
                     type="range"
                     min="40"
                     max="500"
-                    value={scale * 100}
-                    onChange={(e) => {
-                        setScale(Number(e.target.value) / 100);
-                    }}
+                    value={zoom}
+                    onChange={(e) => setScalePercent(Number(e.target.value))}
                 />
-                <span>{(scale * 100).toFixed(0)}%</span>
+                <span>{zoom}%</span>
             </div>
         </div>
     );
-}
+});
 
 export default EditorCanvas;

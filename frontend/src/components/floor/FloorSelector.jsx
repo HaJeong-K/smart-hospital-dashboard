@@ -6,11 +6,13 @@ function FloorSelector({
 
     onChange,
 
+    variant,
+
 }) {
 
     return (
 
-        <div className="floor-selector">
+        <div className={`floor-selector ${variant === "horizontal" ? "floor-selector--horizontal" : ""}`}>
 
             {
 

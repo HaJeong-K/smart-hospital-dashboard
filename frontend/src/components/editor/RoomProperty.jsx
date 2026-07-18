@@ -1,10 +1,12 @@
 import {
     BedDouble,
-    User,
     Radar,
     TriangleAlert,
-    FileText,
+    Plus,
+    Minus,
 } from "lucide-react";
+
+import { ROOM_TYPES, STATUS_META, rebuildRoomStructure, setBedCount } from "../../data/floorsData";
 
 function RoomProperty({
 
@@ -50,14 +52,14 @@ function RoomProperty({
 
     }
 
+    const isPatientRoom = room.type === "patient";
+
     return (
 
         <div className="room-property">
 
             <h2>
-
                 Room Property
-
             </h2>
 
             <div className="property-grid">
@@ -66,7 +68,7 @@ function RoomProperty({
 
                     <BedDouble size={16}/>
 
-                    병실번호
+                    호실 번호
 
                     <input
 
@@ -89,102 +91,49 @@ function RoomProperty({
                 </label>
 
                 <label>
+                    구역 유형
 
-                    <User size={16}/>
-
-                    환자명
-
-                    <input
-
-                        value={room.patient?.name || ""}
-
-                        onChange={(e)=>
-
-                            updateRoom(item=>({
-
-                                ...item,
-
-                                patient:{
-
-                                    ...item.patient,
-
-                                    name:e.target.value,
-
-                                }
-
-                            }))
-
-                        }
-
-                    />
-
+                    <select
+                        value={room.type}
+                        onChange={(e) => updateRoom((item) => rebuildRoomStructure({ ...item, type: e.target.value }))}
+                    >
+                        {Object.entries(ROOM_TYPES).map(([key, meta]) => (
+                            <option key={key} value={key}>{meta.label}</option>
+                        ))}
+                    </select>
                 </label>
 
-                <label>
-
-                    나이
-
-                    <input
-
-                        type="number"
-
-                        value={room.patient?.age || ""}
-
-                        onChange={(e)=>
-
-                            updateRoom(item=>({
-
-                                ...item,
-
-                                patient:{
-
-                                    ...item.patient,
-
-                                    age:Number(e.target.value),
-
-                                }
-
-                            }))
-
-                        }
-
-                    />
-
-                </label>
+                {isPatientRoom && (
+                    <label>
+                        병상 수 (다인실 지원)
+                        <div className="bed-stepper">
+                            <button
+                                type="button"
+                                className="icon-button-sm"
+                                onClick={() => updateRoom((item) => setBedCount(item, (item.beds?.length || 1) - 1))}
+                            >
+                                <Minus size={14} />
+                            </button>
+                            <span>{room.beds?.length || 1}인실</span>
+                            <button
+                                type="button"
+                                className="icon-button-sm"
+                                onClick={() => updateRoom((item) => setBedCount(item, (item.beds?.length || 1) + 1))}
+                            >
+                                <Plus size={14} />
+                            </button>
+                        </div>
+                        <span className="form-hint">환자 배정/이름 입력은 "호실별 관리" 또는 "환자 관리" 화면에서 합니다.</span>
+                    </label>
+                )}
 
                 <label>
 
                     <Radar size={16}/>
 
-                    Radar ID
+                    센서 개수 (구역당 1개 자동 배정)
 
-                    <input
-
-                        value={room.sensors?.[0]?.id || ""}
-
-                        onChange={(e)=>
-
-                            updateRoom(item=>({
-
-                                ...item,
-
-                                sensors:[
-
-                                    {
-
-                                        id:e.target.value,
-
-                                        type:"MMWAVE",
-
-                                    }
-
-                                ]
-
-                            }))
-
-                        }
-
-                    />
+                    <input value={`${room.sensors?.length || 0}개`} readOnly />
 
                 </label>
 
@@ -192,7 +141,7 @@ function RoomProperty({
 
                     <TriangleAlert size={16}/>
 
-                    상태
+                    대표 상태 (수동 지정, 저장 시 유지됨)
 
                     <select
 
@@ -218,53 +167,11 @@ function RoomProperty({
 
                     >
 
-                        <option value="normal">
-
-                            정상
-
-                        </option>
-
-                        <option value="warning">
-
-                            주의
-
-                        </option>
-
-                        <option value="danger">
-
-                            위험
-
-                        </option>
+                        {Object.entries(STATUS_META).map(([key, meta]) => (
+                            <option key={key} value={key}>{meta.label}</option>
+                        ))}
 
                     </select>
-
-                </label>
-
-                <label>
-
-                    <FileText size={16}/>
-
-                    메모
-
-                    <textarea
-
-                        rows={5}
-
-                        value={room.note || ""}
-
-                        onChange={(e)=>
-
-                            updateRoom(item=>({
-
-                                ...item,
-
-                                note:e.target.value,
-
-                            }))
-
-                        }
-
-                    />
 
                 </label>
 

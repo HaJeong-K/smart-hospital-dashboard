@@ -1,4 +1,4 @@
-import { Building2, Plus } from "lucide-react";
+import { Building2, Plus, Trash2 } from "lucide-react";
 
 function BuildingManager({ hospital, setHospital }) {
 
@@ -25,22 +25,43 @@ function BuildingManager({ hospital, setHospital }) {
 
     };
 
+    const renameBuilding = (id, name) => {
+
+        setHospital(prev => ({
+
+            ...prev,
+
+            buildings: (prev.buildings || []).map(b =>
+                b.id === id ? { ...b, name } : b
+            ),
+
+        }));
+
+    };
+
+    const removeBuilding = (id) => {
+
+        if (!window.confirm("병동을 삭제하시겠습니까?")) return;
+
+        setHospital(prev => ({
+
+            ...prev,
+
+            buildings: (prev.buildings || []).filter(b => b.id !== id),
+
+        }));
+
+    };
+
     return (
 
         <div className="hospital-card">
 
             <div className="hospital-card-header">
 
-                <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                }}>
-
+                <div className="header-title">
                     <Building2 size={22} />
-
                     <h2>병동 관리</h2>
-
                 </div>
 
                 <button
@@ -75,13 +96,27 @@ function BuildingManager({ hospital, setHospital }) {
                     <div
                         key={building.id}
                         className="floor-card"
+                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px" }}
                     >
 
-                        <strong>
+                        <input
+                            value={building.name}
+                            onChange={(e) => renameBuilding(building.id, e.target.value)}
+                            style={{
+                                border: "none",
+                                background: "transparent",
+                                color: "var(--text)",
+                                fontWeight: 700,
+                                fontSize: 15,
+                            }}
+                        />
 
-                            {building.name}
-
-                        </strong>
+                        <button
+                            className="icon-button"
+                            onClick={() => removeBuilding(building.id)}
+                        >
+                            <Trash2 size={16} />
+                        </button>
 
                     </div>
 

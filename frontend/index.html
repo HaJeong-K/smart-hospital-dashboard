@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <!-- 가독성이 좋은 한글 전용 웹폰트(Pretendard) 로드.
+         이전에는 layout.css의 font-family가 "Pretendard"를 1순위로 지정했지만
+         실제로 로드하는 곳이 없어 브라우저 기본 시스템 폰트로 대체 렌더링되고
+         있었다 (T43) — 실제로 로드해서 병원 관계자가 보기 편한 폰트가 적용되게 한다. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      as="style"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+    />
+    <title>스마트 요양병원 관제 시스템</title>
   </head>
   <body>
     <div id="root"></div>

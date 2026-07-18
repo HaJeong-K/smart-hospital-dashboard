@@ -134,7 +134,7 @@ function EditorToolbar({
 
         const svg = document.querySelector(
 
-            ".editor-canvas svg"
+            ".editor-svg"
 
         );
 

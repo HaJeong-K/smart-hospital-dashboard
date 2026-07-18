@@ -5,30 +5,43 @@ import {
     ShieldCheck,
 } from "lucide-react";
 
-const systems = [
-    {
-        title: "FastAPI",
-        status: "ONLINE",
-        icon: Server,
-    },
-    {
-        title: "Radar",
-        status: "31 / 31",
-        icon: Wifi,
-    },
-    {
-        title: "Database",
-        status: "Connected",
-        icon: Database,
-    },
-    {
-        title: "Security",
-        status: "Secure",
-        icon: ShieldCheck,
-    },
-];
+import { useDashboardStore } from "../../store/useDashboardStore";
+import { getFacilityStats } from "../../utils/stats";
 
 function SystemStatus() {
+    const floors = useDashboardStore((s) => s.hospital.floors);
+    const connectionStatus = useDashboardStore((s) => s.connectionStatus);
+    const toggleConnection = useDashboardStore((s) => s.toggleConnection);
+    const stats = getFacilityStats(floors);
+    const online = connectionStatus === "connected";
+    const onlineSensors = online ? stats.sensorTotal : 0;
+
+    const systems = [
+        {
+            title: "FastAPI",
+            status: online ? "ONLINE" : "OFFLINE",
+            icon: Server,
+            danger: !online,
+            onClick: toggleConnection,
+        },
+        {
+            title: "Radar",
+            status: `${onlineSensors} / ${stats.sensorTotal}`,
+            icon: Wifi,
+            danger: !online,
+        },
+        {
+            title: "Database",
+            status: "Connected",
+            icon: Database,
+        },
+        {
+            title: "Security",
+            status: "Secure",
+            icon: ShieldCheck,
+        },
+    ];
+
     return (
         <div className="system-status">
 
@@ -40,10 +53,15 @@ function SystemStatus() {
 
                     <div
                         key={item.title}
-                        className="system-card"
+                        className={`system-card ${item.danger ? "danger" : ""}`}
+                        onClick={item.onClick}
+                        style={item.onClick ? { cursor: "pointer" } : undefined}
+                        title={item.onClick ? "클릭하여 서버 연결 상태 시뮬레이션" : undefined}
                     >
 
-                        <Icon size={22} />
+                        <div className={`kpi-icon ${item.danger ? "danger" : "primary"}`}>
+                            <Icon size={20} />
+                        </div>
 
                         <div>
 

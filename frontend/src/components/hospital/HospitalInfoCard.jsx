@@ -33,9 +33,10 @@ function HospitalInfoCard({
 
             <div className="hospital-card-header">
 
-                <Building2 size={22} />
-
-                <h2>병원 기본 정보</h2>
+                <div className="header-title">
+                    <Building2 size={22} />
+                    <h2>병원 기본 정보</h2>
+                </div>
 
             </div>
 

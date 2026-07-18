@@ -1,42 +1,23 @@
 import {
     ShieldAlert,
     HeartPulse,
+    MoonStar,
     Radar,
     CircleCheckBig,
+    XCircle,
 } from "lucide-react";
 
-const events = [
-    {
-        id: 1,
-        time: "14:22:01",
-        title: "303호 낙상 감지",
-        type: "danger",
-        icon: ShieldAlert,
-    },
-    {
-        id: 2,
-        time: "14:19:52",
-        title: "302호 호흡 이상",
-        type: "warning",
-        icon: HeartPulse,
-    },
-    {
-        id: 3,
-        time: "14:15:11",
-        title: "301호 센서 연결",
-        type: "normal",
-        icon: Radar,
-    },
-    {
-        id: 4,
-        time: "14:10:32",
-        title: "301호 상태 정상",
-        type: "success",
-        icon: CircleCheckBig,
-    },
-];
+import { useDashboardStore } from "../../store/useDashboardStore";
+import { formatTime } from "../../utils/stats";
+import { RESOLUTION_LABEL } from "../../data/floorsData";
+
+const TYPE_ICON = { fall: ShieldAlert, breath: HeartPulse, inactivity: MoonStar, sensor: Radar };
+const RESOLUTION_ICON = { confirmed: CircleCheckBig, false_alarm: XCircle };
+const RESOLUTION_CSS = { confirmed: "success", false_alarm: "normal" };
 
 function EventTimeline() {
+    const eventLog = useDashboardStore((s) => s.eventLog);
+
     return (
         <div className="event-panel">
 
@@ -48,15 +29,30 @@ function EventTimeline() {
 
             <div className="event-list">
 
-                {events.map((event) => {
+                {eventLog.length === 0 && (
+                    <div className="room-empty">이벤트 이력이 없습니다.</div>
+                )}
 
-                    const Icon = event.icon;
+                {eventLog.slice(0, 40).map((event) => {
+
+                    const isResolved = event.action === "resolved";
+                    const Icon = isResolved
+                        ? (RESOLUTION_ICON[event.resolution] || CircleCheckBig)
+                        : (TYPE_ICON[event.type] || ShieldAlert);
+
+                    const cssType = isResolved
+                        ? (RESOLUTION_CSS[event.resolution] || "success")
+                        : (event.type === "fall" ? "danger" : event.type === "sensor" ? "sensor" : "warning");
+
+                    const title = isResolved
+                        ? `${event.floorName} ${event.roomNo} ${event.zoneLabel} — ${RESOLUTION_LABEL[event.resolution]}`
+                        : `${event.floorName} ${event.roomNo} ${event.zoneLabel} ${event.typeLabel}`;
 
                     return (
 
                         <div
-                            key={event.id}
-                            className={`event-item ${event.type}`}
+                            key={`${event.id}-${event.action}`}
+                            className={`event-item ${cssType}`}
                         >
 
                             <Icon size={18} />
@@ -64,15 +60,11 @@ function EventTimeline() {
                             <div className="event-content">
 
                                 <strong>
-
-                                    {event.title}
-
+                                    {title}
                                 </strong>
 
                                 <span>
-
-                                    {event.time}
-
+                                    {formatTime(event.time)}
                                 </span>
 
                             </div>

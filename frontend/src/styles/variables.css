@@ -21,7 +21,7 @@
 
     --panel-hover: #f8fafc;
 
-    --panel-selected: #fee2e2;
+    --panel-selected: #eaf1ff;
 
     /* Border */
 
@@ -35,9 +35,15 @@
 
     --text-secondary: #667085;
 
-    /* Brand */
+    /* Brand — 신뢰감 있는 의료용 블루 톤 (2026-07-17 디자인 개선 반영) */
 
-    --primary: #dc2626;
+    --primary: #2563eb;
+
+    --primary-hover: #1d4ed8;
+
+    --primary-soft: #eaf1ff;
+
+    --primary-rgb: 37, 99, 235;
 
     --danger: #ef4444;
 
@@ -45,13 +51,17 @@
 
     --success: #22c55e;
 
-    /* Room Status */
+    /* Room Status — 🟢정상 🔵움직임없음 🟠호흡이상 🔴낙상 ⚫센서오류 (변경 금지: 고객 색상 규칙) */
 
     --room-normal: #22c55e;
+
+    --room-inactive: #3b82f6;
 
     --room-warning: #f59e0b;
 
     --room-danger: #ef4444;
+
+    --room-sensor: #1e2430;
 
     /* Hospital Map */
 
@@ -65,10 +75,21 @@
 
     --stairs: #d1d5db;
 
-    /* Card */
+    /* Elevation — 은은한 다중 레이어 그림자로 카드에 고급스러운 입체감 부여 */
+
+    --shadow-sm:
+        0 1px 2px rgba(15, 23, 42, 0.05),
+        0 1px 3px rgba(15, 23, 42, 0.06);
 
     --shadow:
-        0 8px 24px rgba(15, 23, 42, 0.08);
+        0 2px 4px rgba(15, 23, 42, 0.04),
+        0 12px 28px rgba(15, 23, 42, 0.08);
+
+    --shadow-lg:
+        0 8px 16px rgba(15, 23, 42, 0.06),
+        0 24px 48px rgba(15, 23, 42, 0.12);
+
+    --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
 
 }
 
@@ -92,7 +113,7 @@
 
     --panel-hover: #273449;
 
-    --panel-selected: #3b1b1b;
+    --panel-selected: #17223b;
 
     /* Border */
 
@@ -106,9 +127,15 @@
 
     --text-secondary: #94a3b8;
 
-    /* Brand */
+    /* Brand — 신뢰감 있는 의료용 블루 톤 (2026-07-17 디자인 개선 반영) */
 
-    --primary: #ef4444;
+    --primary: #3b82f6;
+
+    --primary-hover: #60a5fa;
+
+    --primary-soft: #17223b;
+
+    --primary-rgb: 59, 130, 246;
 
     --danger: #ef4444;
 
@@ -116,13 +143,17 @@
 
     --success: #22c55e;
 
-    /* Room Status */
+    /* Room Status — 🟢정상 🔵움직임없음 🟠호흡이상 🔴낙상 ⚫센서오류 (변경 금지: 고객 색상 규칙) */
 
     --room-normal: #22c55e;
+
+    --room-inactive: #60a5fa;
 
     --room-warning: #f59e0b;
 
     --room-danger: #ef4444;
+
+    --room-sensor: #0b0d12;
 
     /* Hospital Map */
 
@@ -136,9 +167,17 @@
 
     --stairs: #475569;
 
-    /* Card */
+    /* Elevation */
+
+    --shadow-sm:
+        0 1px 2px rgba(0,0,0,0.25);
 
     --shadow:
         0 10px 28px rgba(0,0,0,0.35);
+
+    --shadow-lg:
+        0 20px 48px rgba(0,0,0,0.45);
+
+    --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.28);
 
 }

@@ -78,13 +78,10 @@ function LogoUploader({
 
             <div className="hospital-card-header">
 
-                <ImagePlus size={22} />
-
-                <h2>
-
-                    병원 로고
-
-                </h2>
+                <div className="header-title">
+                    <ImagePlus size={22} />
+                    <h2>병원 로고</h2>
+                </div>
 
             </div>
 

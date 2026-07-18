@@ -13,6 +13,8 @@ import {
     ChevronRight,
 } from "lucide-react";
 
+import { useDashboardStore } from "../../store/useDashboardStore";
+
 function FloorManager({
 
     hospital,
@@ -22,6 +24,7 @@ function FloorManager({
 }) {
 
     const navigate = useNavigate();
+    const removeFloorFromStore = useDashboardStore((s) => s.removeFloor);
 
     const fileRefs = useRef({});
 
@@ -31,11 +34,11 @@ function FloorManager({
 
         const newFloor = {
 
-            id: Date.now(),
+            id: `floor-${Date.now()}`,
 
             name: `${next}F`,
 
-            image: null,
+            floorMap: { type: "image", src: null, width: 1000, height: 700 },
 
             rooms: [],
 
@@ -63,19 +66,9 @@ function FloorManager({
 
     const removeFloor = (id) => {
 
-        if (!window.confirm("층을 삭제하시겠습니까?")) return;
+        if (!window.confirm("층을 삭제하시겠습니까? 해당 층의 활성 알람도 함께 정리됩니다.")) return;
 
-        setHospital(prev => ({
-
-            ...prev,
-
-            floors: prev.floors.filter(
-
-                floor => floor.id !== id
-
-            ),
-
-        }));
+        removeFloorFromStore(id);
 
     };
 
@@ -109,7 +102,7 @@ function FloorManager({
 
         if (!file) return;
 
-        const image = URL.createObjectURL(file);
+        const src = URL.createObjectURL(file);
 
         setHospital(prev => ({
 
@@ -123,7 +116,7 @@ function FloorManager({
 
                         ...floor,
 
-                        image,
+                        floorMap: { ...(floor.floorMap || { type: "image", width: 1000, height: 700 }), src },
 
                     }
 
@@ -221,11 +214,11 @@ function FloorManager({
 
                                 {
 
-                                    floor.image ? (
+                                    floor.floorMap?.src ? (
 
                                         <img
 
-                                            src={floor.image}
+                                            src={floor.floorMap.src}
 
                                             className="floor-thumbnail"
 

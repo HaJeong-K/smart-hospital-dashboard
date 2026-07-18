@@ -19,11 +19,15 @@ function RoomPolygon({
 
     const colors={
 
-        normal:"#22c55e",
+        normal:"var(--room-normal)",
 
-        warning:"#f59e0b",
+        inactive:"var(--room-inactive)",
 
-        danger:"#ef4444",
+        sensor:"var(--room-sensor)",
+
+        warning:"var(--room-warning)",
+
+        danger:"var(--room-danger)",
 
     };
 
