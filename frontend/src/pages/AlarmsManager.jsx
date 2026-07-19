@@ -14,7 +14,7 @@ import {
 
 import { useDashboardStore } from "../store/useDashboardStore";
 import { formatDateTime } from "../utils/stats";
-import { RESOLUTION_LABEL, STATUS_META, ALARM_TYPE_TO_STATUS } from "../data/floorsData";
+import { RESOLUTION_LABEL, ALARM_TYPE_TO_STATUS } from "../data/floorsData";
 
 const TYPE_ICON = { fall: ShieldAlert, breath: HeartPulse, inactivity: MoonStar, sensor: Radar };
 const RESOLUTION_BADGE = { confirmed: "success", false_alarm: "neutral" };

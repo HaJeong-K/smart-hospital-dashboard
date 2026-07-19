@@ -4,9 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 
-import ThemeProvider from "./themes/ThemeContext";
-
-import DashboardProvider from "./context/DashboardProvider";
+import ThemeProvider from "./themes/ThemeProvider";
 
 import "./styles/variables.css";
 import "./styles/globals.css";
@@ -24,11 +22,7 @@ ReactDOM.createRoot(
 
             <ThemeProvider>
 
-                <DashboardProvider>
-
-                    <App />
-
-                </DashboardProvider>
+                <App />
 
             </ThemeProvider>
 

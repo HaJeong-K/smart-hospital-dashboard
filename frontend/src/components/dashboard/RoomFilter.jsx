@@ -1,7 +1,5 @@
 import { Filter } from "lucide-react";
 
-import { STATUS_META } from "../../data/floorsData";
-
 // 이모지 대신 범례(FloorLegend)와 동일한 단색 원(.legend)으로 상태를 표시해
 // 화면 전체에서 상태 표기 방식을 하나로 통일한다.
 const filters = [

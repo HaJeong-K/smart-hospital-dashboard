@@ -10,7 +10,7 @@ import {
 
 import { useDashboardStore } from "../../store/useDashboardStore";
 import { formatTime } from "../../utils/stats";
-import { STATUS_META, ALARM_TYPE_TO_STATUS } from "../../data/floorsData";
+import { ALARM_TYPE_TO_STATUS } from "../../data/floorsData";
 
 const ICONS = { fall: ShieldAlert, breath: HeartPulse, inactivity: MoonStar, sensor: Radar };
 
