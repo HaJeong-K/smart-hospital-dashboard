@@ -62,7 +62,7 @@ function PatientDetailModal({ room, floor, onClose }) {
             <div className="patient-detail-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="patient-detail-modal__header">
                     <h2>
-                        {floor?.name} {room.roomNo}{isPatientRoom ? "호" : ""}
+                        {floor?.name} {room.roomNo}
                         {!isPatientRoom && ROOM_TYPES[room.type]?.label && ROOM_TYPES[room.type].label !== room.roomNo
                             ? ` · ${ROOM_TYPES[room.type].label}`
                             : ""}
@@ -133,7 +133,7 @@ function PatientDetailModal({ room, floor, onClose }) {
                                                 <select value={moveTarget} onChange={(e) => setMoveTarget(e.target.value)}>
                                                     {emptyBedOptions.map((o) => (
                                                         <option key={o.key} value={o.key}>
-                                                            {o.floorName} {o.roomNo}호 · {o.bedLabel}
+                                                            {o.floorName} {o.roomNo} · {o.bedLabel}
                                                         </option>
                                                     ))}
                                                 </select>

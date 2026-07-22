@@ -21,6 +21,9 @@ function cloneHospital(hospital) {
             ...floor,
             floorMap: floor.floorMap ? { ...floor.floorMap } : floor.floorMap,
             sensors: floor.sensors ? [...floor.sensors] : [],
+            walls: floor.walls ? floor.walls.map((w) => ({ ...w, points: w.points.map((p) => [...p]) })) : [],
+            doors: floor.doors ? floor.doors.map((d) => ({ ...d })) : [],
+            structures: floor.structures ? floor.structures.map((s) => ({ ...s, polygon: s.polygon.map((p) => [...p]) })) : [],
             rooms: floor.rooms.map((room) => ({
                 ...room,
                 beds: room.beds ? room.beds.map((bed) => ({ ...bed, patient: bed.patient ? { ...bed.patient } : null })) : [],
@@ -63,6 +66,9 @@ function buildInitialHospital() {
             floorMap: floor.floorMap,
             rooms: floor.rooms,
             sensors: floor.rooms.flatMap((r) => r.sensors || []),
+            walls: floor.walls || [],
+            doors: floor.doors || [],
+            structures: floor.structures || [],
             beds: countBeds(floor.rooms),
         })),
     };
@@ -122,9 +128,9 @@ export const useDashboardStore = create(
             toggleConnection: () =>
                 set((s) => ({ connectionStatus: s.connectionStatus === "connected" ? "disconnected" : "connected" })),
 
-            // FloorEditor에서 "저장"을 누르면 편집 중이던 rooms/배경을 스토어에 커밋한다.
+            // FloorEditor에서 "저장"을 누르면 편집 중이던 rooms/배경/벽/문을 스토어에 커밋한다.
             // 이게 없으면 층 편집기에서 그린 병실이 대시보드/병실목록에 절대 반영되지 않는다 (기존 버그).
-            saveFloorRooms: (floorId, rooms, floorMapPatch) => {
+            saveFloorRooms: (floorId, rooms, floorMapPatch, walls, doors, structures) => {
                 set((s) => {
                     const hospital = cloneHospital(s.hospital);
                     const floor = hospital.floors.find((f) => f.id === floorId);
@@ -136,6 +142,9 @@ export const useDashboardStore = create(
                     }));
                     floor.sensors = floor.rooms.flatMap((r) => r.sensors || []);
                     floor.beds = countBeds(floor.rooms);
+                    if (walls) floor.walls = walls;
+                    if (doors) floor.doors = doors;
+                    if (structures) floor.structures = structures;
                     if (floorMapPatch) floor.floorMap = { ...floor.floorMap, ...floorMapPatch };
                     return { hospital };
                 });
@@ -154,6 +163,9 @@ export const useDashboardStore = create(
                                 floorMap: { type: "image", src: null, width: 1000, height: 700 },
                                 rooms: [],
                                 sensors: [],
+                                walls: [],
+                                doors: [],
+                                structures: [],
                                 beds: 0,
                             },
                         ],

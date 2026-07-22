@@ -87,7 +87,7 @@ function PatientRoomLabel({ room, centerX, centerY, boxWidth = 140, boxHeight = 
             );
         });
 
-    const titleText = `${room.roomNo}호 (${count}인실)`;
+    const titleText = `${room.roomNo} (${count}인실)`;
     const titleHalfWidth = (titleText.length * titleFontSize * 0.58) / 2;
 
     return (
@@ -107,7 +107,7 @@ function PatientRoomLabel({ room, centerX, centerY, boxWidth = 140, boxHeight = 
                 fontSize={titleFontSize}
                 fontWeight="800"
             >
-                {room.roomNo}호 ({count}인실)
+                {room.roomNo} ({count}인실)
             </text>
 
             {useTwoColumns ? (

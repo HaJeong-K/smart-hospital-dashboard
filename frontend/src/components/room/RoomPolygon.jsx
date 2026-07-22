@@ -9,6 +9,8 @@ function RoomPolygon({
 
     onClick,
 
+    viewBox,
+
 }) {
 
     const [hover,setHover]=useState(false);
@@ -65,7 +67,7 @@ function RoomPolygon({
 
                 fill={colors[room.status.room]}
 
-                stroke="white"
+                stroke="var(--room-border)"
 
                 strokeWidth={hover?5:2}
 
@@ -86,6 +88,8 @@ function RoomPolygon({
                         x={centerX*1000}
 
                         y={centerY*700}
+
+                        viewBox={viewBox}
 
                     />
 

@@ -26,6 +26,7 @@ import LogoUploader from "../components/hospital/LogoUploader";
 import FloorManager from "../components/hospital/FloorManager";
 import BuildingManager from "../components/hospital/BuildingManager";
 import SaveHospitalButton from "../components/hospital/SaveHospitalButton";
+import SystemStatus from "../components/dashboard/SystemStatus";
 
 function ToggleRow({ label, desc, on, onToggle }) {
     return (
@@ -178,6 +179,15 @@ function SettingsPage() {
                                 <span className="switch__knob" />
                             </button>
                         </div>
+                    </div>
+
+                    {/* 원래 Monitoring(관제) 화면 최상단에 있던 시스템 상태 카드(FastAPI/Radar/
+                        Database/Security)를 설정 > 일반 탭 최하단으로 이동 — 관제 화면은 배치도/
+                        알람 확인에 집중하고, 시스템 상태 점검은 설정에서 확인하도록 역할을 분리했다
+                        (2026-07-22 피드백). */}
+                    <div className="panel-section">
+                        <h3>시스템 상태</h3>
+                        <SystemStatus />
                     </div>
                 </>
             )}
@@ -368,7 +378,7 @@ function SettingsPage() {
                                         floor.rooms.flatMap((room) =>
                                             (room.zones || []).map((zone) => (
                                                 <tr key={zone.id}>
-                                                    <td>{floor.name} {room.roomNo}{room.type === "patient" ? "호" : ""}</td>
+                                                    <td>{floor.name} {room.roomNo}</td>
                                                     <td>{zone.label}</td>
                                                     <td>
                                                         <input

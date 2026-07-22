@@ -1,63 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 
+import StairsIcon from "../room/StairsIcon";
+import ElevatorIcon from "../room/ElevatorIcon";
 import { SVG_WIDTH, SVG_HEIGHT, findAlignmentGuide, findSizeMatchGuide } from "../../utils/alignmentGuides";
 
-// 방을 통째로 옮길 때, 다른 방/구조물과 경계(좌우상하)나 중심이 가까워지면 안내선만
-// 표시한다(위치를 강제로 붙이지는 않음) — 같은 크기의 방을 나란히 배치할 때 자연스럽게
-// 줄이 맞도록 도와준다 (2026-07-22 피드백).
-function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelectedRoom }) {
-    const [dragVertex, setDragVertex] = useState(null); // { roomId, index }
-    const [dragRoom, setDragRoom] = useState(null); // { roomId }
-    const [dragEdge, setDragEdge] = useState(null); // { roomId, edgeIndex, axis }
-    const [guide, setGuide] = useState(null); // { x, y }
+const ICONS = { stairs: StairsIcon, elevator: ElevatorIcon };
 
-    // 좌표 변환 기준이 되는 <g> 참조.
-    // 이 <g>는 EditorCanvas의 zoom/pan <g> 안쪽에 위치하므로,
-    // 이 요소의 getScreenCTM()을 이용하면 zoom/pan 상태와 무관하게
-    // 정확한 로컬(캔버스) 좌표를 얻을 수 있다.
+// 계단/엘리베이터 — 문(DoorLayer)처럼 방(room)과 무관한 순수 구조 심볼이다. 사각형 방을
+// 그리듯 드래그로 폴리곤을 잡지만, zones/beds/sensors/status 같은 방 데이터는 없다.
+// 선택 → 통째로 이동 / 꼭짓점 드래그로 크기 조정은 PolygonLayer와 동일한 방식을 그대로 쓴다.
+// 통째로 옮기는 중에는 캔바/미리캔버스처럼, 다른 방·구조물과 경계(좌우상하)나 중심이
+// 가까워지면 안내선(가이드)만 뜬다 — 처음엔 실제로 그 축에 위치를 강제로 붙였는데
+// "너무 꽉 잡는다"는 피드백으로 위치는 마우스를 그대로 따라가게 두고 시각적 안내선만
+// 표시하도록 바꿨다 (2026-07-22 피드백).
+function StructureLayer({ structures, rooms = [], selectedStructure, setStructures, setSelectedStructure }) {
+    const [dragVertex, setDragVertex] = useState(null); // { id, index }
+    const [dragStructure, setDragStructure] = useState(null); // { id }
+    const [dragEdge, setDragEdge] = useState(null); // { id, edgeIndex, axis }
+    const [guide, setGuide] = useState(null); // { x, y } — 스냅된 축(없으면 null)
+
     const groupRef = useRef(null);
-
-    // 폴리곤 이동(drag) 시 이전 프레임의 로컬 좌표를 저장해
-    // 델타(dx, dy)를 계산하기 위한 ref.
     const lastPointRef = useRef({ x: 0, y: 0 });
 
-    /* ===========================
-       화면 좌표 -> 캔버스 로컬 좌표 변환
-    =========================== */
     const toLocalPoint = (clientX, clientY) => {
         const ctm = groupRef.current?.getScreenCTM();
         if (!ctm) return { x: 0, y: 0 };
-
-        const point = new DOMPoint(clientX, clientY).matrixTransform(
-            ctm.inverse()
-        );
+        const point = new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
         return { x: point.x, y: point.y };
     };
 
-    /* ===========================
-       Room / Vertex 업데이트
-    =========================== */
-    const updateVertex = (roomId, index, x, y) => {
-        setRooms((prev) =>
-            prev.map((room) => {
-                if (room.id !== roomId) return room;
-                const polygon = [...room.polygon];
+    const updateVertex = (id, index, x, y) => {
+        setStructures((prev) =>
+            prev.map((s) => {
+                if (s.id !== id) return s;
+                const polygon = [...s.polygon];
                 polygon[index] = [
                     Math.max(0, Math.min(1, x / SVG_WIDTH)),
                     Math.max(0, Math.min(1, y / SVG_HEIGHT)),
                 ];
-                return { ...room, polygon };
-            })
+                return { ...s, polygon };
+            }),
         );
     };
 
-    // 변(edge) 중점 핸들을 드래그하면, 그 변을 이루는 두 꼭짓점만 "변에 수직인 축"으로
-    // 함께 움직인다 — 가로 변(위/아래쪽)이면 세로(y)로, 세로 변(좌/우쪽)이면 가로(x)로만
-    // 움직여서 해당 면(폭 또는 높이)만 늘어나거나 줄어든다. 반대쪽 변은 그대로 고정된다.
-    // 이렇게 조정된 폭/높이가 다른 방·구조물과 같아지면 안내선을 띄운다(2026-07-22 피드백).
-    const updateEdge = (roomId, edgeIndex, axis, delta) => {
-        setRooms((prev) => {
-            const current = prev.find((r) => r.id === roomId);
+    // 변(edge) 중점 핸들 — 그 변을 이루는 두 꼭짓점만 변에 수직인 축으로 함께 움직여서
+    // 반대쪽 변은 고정한 채 폭 또는 높이만 조정한다 (PolygonLayer와 동일한 방식). 이렇게
+    // 조정된 폭/높이가 다른 방·구조물과 같아지면 안내선을 띄운다 (2026-07-22 피드백).
+    const updateEdge = (id, edgeIndex, axis, delta) => {
+        setStructures((prev) => {
+            const current = prev.find((s) => s.id === id);
             if (!current) return prev;
 
             const n = current.polygon.length;
@@ -72,19 +63,19 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
             });
 
             const targets = [
-                ...prev.filter((r) => r.id !== roomId).map((r) => r.polygon),
-                ...structures.map((s) => s.polygon),
+                ...prev.filter((s) => s.id !== id).map((s) => s.polygon),
+                ...rooms.map((r) => r.polygon),
             ];
             const movingCoord = axis === "x" ? polygon[i1][0] * SVG_WIDTH : polygon[i1][1] * SVG_HEIGHT;
             setGuide(findSizeMatchGuide(polygon, targets, axis, movingCoord));
 
-            return prev.map((r) => (r.id === roomId ? { ...r, polygon } : r));
+            return prev.map((s) => (s.id === id ? { ...s, polygon } : s));
         });
     };
 
-    const moveRoom = (roomId, dx, dy) => {
-        setRooms((prev) => {
-            const current = prev.find((r) => r.id === roomId);
+    const moveStructure = (id, dx, dy) => {
+        setStructures((prev) => {
+            const current = prev.find((s) => s.id === id);
             if (!current) return prev;
 
             // 위치는 항상 마우스를 그대로 따라간다 — 스냅으로 억지로 당기지 않는다.
@@ -94,65 +85,54 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
             ]);
 
             const targets = [
-                ...prev.filter((r) => r.id !== roomId).map((r) => r.polygon),
-                ...structures.map((s) => s.polygon),
+                ...prev.filter((s) => s.id !== id).map((s) => s.polygon),
+                ...rooms.map((r) => r.polygon),
             ];
             setGuide(findAlignmentGuide(polygon, targets));
 
-            return prev.map((r) => (r.id === roomId ? { ...r, polygon } : r));
+            return prev.map((s) => (s.id === id ? { ...s, polygon } : s));
         });
     };
 
-    /* ===========================
-       드래그 시작
-       - 드래그 시작 시점의 로컬 좌표를 lastPointRef에 저장해두고,
-         이후 window mousemove에서 그 지점 대비 델타를 계산한다.
-    =========================== */
-    const startVertexDrag = (e, roomId, index) => {
+    const startVertexDrag = (e, id, index) => {
         e.stopPropagation();
         lastPointRef.current = toLocalPoint(e.clientX, e.clientY);
-        setDragVertex({ roomId, index });
+        setDragVertex({ id, index });
     };
 
-    const startRoomDrag = (e, roomId) => {
+    const startStructureDrag = (e, id) => {
         e.stopPropagation();
         lastPointRef.current = toLocalPoint(e.clientX, e.clientY);
-        setDragRoom({ roomId });
+        setDragStructure({ id });
     };
 
-    const startEdgeDrag = (e, roomId, edgeIndex, axis) => {
+    const startEdgeDrag = (e, id, edgeIndex, axis) => {
         e.stopPropagation();
         lastPointRef.current = toLocalPoint(e.clientX, e.clientY);
-        setDragEdge({ roomId, edgeIndex, axis });
+        setDragEdge({ id, edgeIndex, axis });
     };
 
-    /* ===========================
-       드래그 중 (window 레벨에서 처리)
-       - 개별 polygon/circle에만 mousemove를 걸면 커서가 그 영역을
-         벗어나는 순간 드래그가 끊기므로, 드래그가 시작된 동안에는
-         window 전체에서 이동/해제를 감지한다.
-    =========================== */
     useEffect(() => {
-        if (!dragVertex && !dragRoom && !dragEdge) return;
+        if (!dragVertex && !dragStructure && !dragEdge) return;
 
         const handleMove = (e) => {
             const point = toLocalPoint(e.clientX, e.clientY);
 
             if (dragVertex) {
-                updateVertex(dragVertex.roomId, dragVertex.index, point.x, point.y);
+                updateVertex(dragVertex.id, dragVertex.index, point.x, point.y);
             }
 
-            if (dragRoom) {
+            if (dragStructure) {
                 const dx = point.x - lastPointRef.current.x;
                 const dy = point.y - lastPointRef.current.y;
-                moveRoom(dragRoom.roomId, dx, dy);
+                moveStructure(dragStructure.id, dx, dy);
             }
 
             if (dragEdge) {
                 const delta = dragEdge.axis === "y"
                     ? point.y - lastPointRef.current.y
                     : point.x - lastPointRef.current.x;
-                updateEdge(dragEdge.roomId, dragEdge.edgeIndex, dragEdge.axis, delta);
+                updateEdge(dragEdge.id, dragEdge.edgeIndex, dragEdge.axis, delta);
             }
 
             lastPointRef.current = point;
@@ -160,7 +140,7 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
 
         const handleUp = () => {
             setDragVertex(null);
-            setDragRoom(null);
+            setDragStructure(null);
             setDragEdge(null);
             setGuide(null);
         };
@@ -173,34 +153,37 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
             window.removeEventListener("mouseup", handleUp);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dragVertex, dragRoom, dragEdge]);
+    }, [dragVertex, dragStructure, dragEdge]);
 
     return (
         <g ref={groupRef}>
-            {rooms.map((room) => {
-                const points = room.polygon
+            {structures.map((structure) => {
+                const points = structure.polygon
                     .map(([x, y]) => `${x * SVG_WIDTH},${y * SVG_HEIGHT}`)
                     .join(" ");
-                const active = selectedRoom?.id === room.id;
+                const active = selectedStructure?.id === structure.id;
+                const Icon = ICONS[structure.type];
 
                 return (
                     <g
-                        key={room.id}
+                        key={structure.id}
                         onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedRoom(room);
+                            setSelectedStructure(structure);
                         }}
                     >
                         <polygon
                             points={points}
-                            fill={active ? "rgba(59,130,246,.35)" : "rgba(34,197,94,.25)"}
-                            stroke={active ? "#3b82f6" : "#22c55e"}
-                            strokeWidth={active ? 4 : 2}
-                            onMouseDown={(e) => startRoomDrag(e, room.id)}
+                            fill="var(--map-background)"
+                            stroke={active ? "#3b82f6" : "none"}
+                            strokeWidth={active ? 3 : 0}
+                            onMouseDown={(e) => startStructureDrag(e, structure.id)}
                         />
 
+                        {Icon && <Icon room={structure} color="var(--text)" />}
+
                         {active &&
-                            room.polygon.map(([x, y], index) => (
+                            structure.polygon.map(([x, y], index) => (
                                 <circle
                                     key={index}
                                     cx={x * SVG_WIDTH}
@@ -209,17 +192,15 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
                                     fill="#ffffff"
                                     stroke="#2563eb"
                                     strokeWidth="3"
-                                    onMouseDown={(e) =>
-                                        startVertexDrag(e, room.id, index)
-                                    }
+                                    onMouseDown={(e) => startVertexDrag(e, structure.id, index)}
                                 />
                             ))}
 
                         {/* 변(edge) 중점 핸들 — 꼭짓점 대신 이걸 잡고 드래그하면 그 변만
                             늘어나거나 줄어든다(폭 또는 높이만 조정, 반대쪽 변은 고정). */}
                         {active &&
-                            room.polygon.map(([x1, y1], index) => {
-                                const [x2, y2] = room.polygon[(index + 1) % room.polygon.length];
+                            structure.polygon.map(([x1, y1], index) => {
+                                const [x2, y2] = structure.polygon[(index + 1) % structure.polygon.length];
                                 const mx = ((x1 + x2) / 2) * SVG_WIDTH;
                                 const my = ((y1 + y2) / 2) * SVG_HEIGHT;
                                 const horizontal = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
@@ -238,7 +219,7 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
                                         stroke="#2563eb"
                                         strokeWidth="2"
                                         style={{ cursor }}
-                                        onMouseDown={(e) => startEdgeDrag(e, room.id, index, axis)}
+                                        onMouseDown={(e) => startEdgeDrag(e, structure.id, index, axis)}
                                     />
                                 );
                             })}
@@ -246,17 +227,18 @@ function PolygonLayer({ rooms, structures = [], selectedRoom, setRooms, setSelec
                 );
             })}
 
-            {/* 정렬 안내선 — 방을 드래그(이동)하는 동안엔 다른 방/구조물의 경계·중심과
+            {/* 정렬 안내선 — 통째로 이동(dragStructure) 중엔 다른 방/구조물의 경계·중심과
                 가까워지면, 변 핸들로 크기를 조정(dragEdge)하는 동안엔 폭/높이가 같아지면
-                캔버스 전체 폭/높이로 표시된다(위치를 강제로 옮기지는 않음). */}
-            {(dragRoom || dragEdge) && guide?.x !== null && guide?.x !== undefined && (
+                캔버스 전체 폭/높이로 표시된다(위치를 강제로 옮기지는 않음). 라이트 모드는
+                회색, 다크 모드는 흰색(--align-guide). */}
+            {(dragStructure || dragEdge) && guide?.x !== null && guide?.x !== undefined && (
                 <line x1={guide.x} y1="0" x2={guide.x} y2={SVG_HEIGHT} stroke="var(--align-guide)" strokeWidth="1.5" strokeDasharray="5 4" pointerEvents="none" />
             )}
-            {(dragRoom || dragEdge) && guide?.y !== null && guide?.y !== undefined && (
+            {(dragStructure || dragEdge) && guide?.y !== null && guide?.y !== undefined && (
                 <line x1="0" y1={guide.y} x2={SVG_WIDTH} y2={guide.y} stroke="var(--align-guide)" strokeWidth="1.5" strokeDasharray="5 4" pointerEvents="none" />
             )}
         </g>
     );
 }
 
-export default PolygonLayer;
+export default StructureLayer;

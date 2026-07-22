@@ -21,7 +21,7 @@ describe("AlarmPanel", () => {
         render(<AlarmPanel />);
 
         expect(screen.getByText("1")).toBeInTheDocument(); // alarm-count
-        expect(screen.getByText(/301호/)).toBeInTheDocument();
+        expect(screen.getByText(/301/)).toBeInTheDocument();
         expect(screen.getByText(/낙상감지|낙상 감지/)).toBeInTheDocument();
     });
 

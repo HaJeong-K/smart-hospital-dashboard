@@ -114,7 +114,7 @@ function NotificationToast() {
                         <Icon size={18} />
                         <span>
                             {t.floorName} {t.roomNo}
-                            {t.roomType === "patient" ? "호" : ""} {t.zoneLabel} — {t.typeLabel}
+                            {" "}{t.zoneLabel} — {t.typeLabel}
                         </span>
                         <button className="toast-close" onClick={() => dismiss(t.toastId)}>
                             <X size={14} />

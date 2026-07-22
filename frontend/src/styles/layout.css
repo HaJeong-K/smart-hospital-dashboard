@@ -4,7 +4,11 @@
 
 .app{
     width:100%;
-    min-height:100vh;
+    /* min-height였을 때는 내부 콘텐츠가 뷰포트보다 커지면 .app 자체가 그만큼 늘어나
+       버려서, 안쪽(.content)의 overflow:hidden/auto와 별개로 브라우저 문서 자체가
+       스크롤되는 문제가 있었다. height로 뷰포트에 정확히 고정해 .content 내부에서만
+       스크롤 여부가 결정되도록 한다 (2026-07-22 피드백 — Monitoring 화면 스크롤 제거). */
+    height:100vh;
     background:var(--background);
     display:flex;
     flex-direction:column;
@@ -330,25 +334,251 @@
 
 }
 
+/* Monitoring(관제) 화면 전용 — 페이지 전체가 스크롤되지 않는 단일 고정 화면.
+   그 안에서 배치도+하단 패널 영역(.dashboard)만 남은 높이를 꽉 채우고,
+   알람/이벤트 목록처럼 내용이 넘치는 곳만 자체적으로 스크롤된다 (2026-07-22 피드백). */
+.content--fixed{
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
+
+    /* 기본 .content 패딩(26px)보다 좁혀 배치도+하단 패널에 세로 공간을 더 확보한다. */
+    padding:16px 24px;
+
+}
+
+/* Monitoring 전용 고정 화면에서는 KPI/상태/툴바/필터/층선택 각 블록이 화면 높이를
+   불필요하게 많이 차지하지 않도록 여백만 좁힌다(다른 화면에는 영향 없음 — 전부
+   .content--fixed 하위에서만 적용). 카드 내용/기능은 그대로 유지된다. */
+.content--fixed .monitoring-kpi-grid{
+    margin-bottom:12px;
+    flex-shrink:0;
+}
+
+.content--fixed .monitoring-kpi-card{
+    min-height:56px;
+}
+
+.content--fixed .top-toolbar{
+    margin-bottom:12px;
+    flex-shrink:0;
+}
+
+.content--fixed .floor-filter-row{
+    margin-bottom:12px;
+    flex-shrink:0;
+}
+
+/* Monitoring 고정 화면 전용 축소 타이포/여백 — 배치도 비중을 키우고 나니 위쪽 정보들이
+   상대적으로 커 보여, 같은 정보를 더 작은 글씨/여백으로 표시한다 (2026-07-22 피드백).
+   다른 화면(환자관리/설정 등)에서 재사용되는 클래스라도 .content--fixed 하위(=Monitoring)
+   에서만 적용되도록 스코프를 좁혔다. */
+.content--fixed .kpi-card{
+    padding:10px 14px;
+}
+
+.content--fixed .kpi-card span{
+    font-size:11px;
+}
+
+.content--fixed .kpi-card h2{
+    font-size:18px;
+    margin-top:4px;
+}
+
+.content--fixed .kpi-icon{
+    width:32px;
+    height:32px;
+}
+
+.content--fixed .kpi-icon svg{
+    width:16px;
+    height:16px;
+}
+
+.content--fixed .kpi-unit{
+    font-size:11px;
+}
+
+.content--fixed .kpi-desc{
+    font-size:10.5px;
+    margin-top:4px;
+}
+
+.content--fixed .floor-filter-row__right .toolbar-search{
+    padding:9px 14px;
+}
+
+.content--fixed .floor-filter-row__right .toolbar-search input{
+    font-size:13px;
+}
+
+.content--fixed .top-toolbar .toolbar-button{
+    padding:8px 13px;
+    font-size:12.5px;
+}
+
+.content--fixed .top-toolbar .today-box{
+    padding:8px 12px;
+    font-size:12.5px;
+}
+
+.content--fixed .room-filter button{
+    padding:7px 13px;
+    font-size:12px;
+}
+
+.content--fixed .floor-selector--horizontal .floor-button{
+    height:38px;
+    font-size:14px;
+    padding:0 16px;
+}
+
+.content--fixed .floor-header{
+    height:42px;
+    padding:0 14px;
+}
+
+.content--fixed .floor-header h2{
+    font-size:15px;
+    gap:8px;
+}
+
+.content--fixed .floor-legend{
+    gap:12px;
+}
+
+.content--fixed .floor-legend div{
+    font-size:11.5px;
+}
+
+.content--fixed .patient-header{
+    padding:12px 14px;
+    gap:10px;
+}
+
+.content--fixed .patient-avatar{
+    width:38px;
+    height:38px;
+}
+
+.content--fixed .patient-header h2{
+    font-size:14px;
+    margin-bottom:2px;
+}
+
+.content--fixed .patient-header span{
+    font-size:10.5px;
+}
+
+.content--fixed .patient-card{
+    padding:10px 12px;
+    gap:8px;
+}
+
+.content--fixed .patient-row{
+    padding:7px 10px;
+    gap:8px;
+}
+
+.content--fixed .patient-row span{
+    font-size:11px;
+}
+
+.content--fixed .patient-row strong{
+    font-size:12px;
+}
+
+.content--fixed .patient-empty-icon{
+    width:34px;
+    height:34px;
+}
+
+.content--fixed .patient-empty h2{
+    font-size:13px;
+}
+
+.content--fixed .patient-empty p{
+    font-size:11px;
+}
+
+.content--fixed .alarm-header{
+    padding:12px 14px;
+    gap:8px;
+}
+
+.content--fixed .alarm-header h2{
+    font-size:14px;
+}
+
+.content--fixed .alarm-count{
+    font-size:11px;
+}
+
+.content--fixed .alarm-card{
+    padding:10px 12px;
+    gap:10px;
+}
+
+.content--fixed .alarm-info strong{
+    font-size:12px;
+}
+
+.content--fixed .alarm-info span{
+    font-size:10.5px;
+}
+
+.content--fixed .alarm-card small{
+    font-size:10.5px;
+}
+
+.content--fixed .alarm-resolve-btn{
+    padding:4px 7px;
+    font-size:11px;
+}
+
+.content--fixed .event-title{
+    padding:12px 14px;
+}
+
+.content--fixed .event-title h3{
+    font-size:14px;
+}
+
+.content--fixed .event-item{
+    padding:10px 12px;
+    gap:10px;
+}
+
+.content--fixed .event-content strong{
+    font-size:11px;
+}
+
+.content--fixed .event-content span{
+    font-size:10.5px;
+}
+
 /* ===========================
    DASHBOARD
 =========================== */
 
 .dashboard{
 
-    display:grid;
+    display:flex;
 
-    /* 층 선택 버튼을 가로 배치(.floor-selector--horizontal)로 캔버스 위로 옮기면서
-       세로 80px 칼럼이 사라져, 그만큼 배치도 폭이 넓어졌다 (T51). */
-    grid-template-columns:
+    flex-direction:column;
 
-        minmax(0,1fr)
+    gap:16px;
 
-        340px;
+    /* .content--fixed(Monitoring 전용 고정 레이아웃) 안에서 위쪽 KPI/툴바/필터/층선택
+       영역이 차지하고 남는 높이를 전부 차지해, 배치도+하단 패널이 화면에 딱 맞고
+       페이지 자체는 스크롤되지 않도록 한다 (2026-07-22 피드백). */
+    flex:1;
 
-    gap:20px;
-
-    align-items:stretch;
+    min-height:0;
 
 }
 
@@ -546,6 +776,11 @@
 
     gap:12px;
 
+    /* 병실/환자 검색창이 층 선택 줄(필터 옆)로 옮겨가면서 .top-toolbar에는 이제
+       이 요소 하나만 남는다 — justify-content:space-between은 자식이 하나뿐이면
+       왼쪽으로 붙어버리므로, 오른쪽 정렬을 명시적으로 유지한다 (2026-07-22 피드백). */
+    margin-left:auto;
+
 }
 
 .toolbar-search{
@@ -688,72 +923,159 @@
 }
 
 /* ===========================
-   ROOM FILTER
+   FLOOR + FILTER ROW (층 선택 + 상태 필터를 한 줄에 배치)
 =========================== */
 
-.room-filter{
-
+.floor-filter-row{
     display:flex;
-
     align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:22px;
+}
 
+/* 이 줄 안에서는 층 선택 버튼 목록이 필터 아이콘 자리를 남기고 자기 내용만큼만 차지하도록,
+   기본(width:100%) 대신 폭을 내용에 맞춘다. margin-bottom도 바깥(.floor-filter-row)이
+   대신 갖고 있어 여기서는 뺀다. */
+.floor-filter-row .floor-selector--horizontal{
+    width:auto;
+    margin-bottom:0;
+    flex:1;
+}
+
+/* 검색창 + 필터 버튼을 오른쪽에 함께 묶는 그룹 — 층 선택 버튼과 겹치지 않도록
+   flex-shrink:0으로 자기 크기를 유지한다 (2026-07-22 피드백 — 검색을 필터 옆으로 이동). */
+.floor-filter-row__right{
+    display:flex;
+    align-items:center;
     gap:10px;
-
-    margin-bottom:24px;
-
+    flex-shrink:0;
 }
 
-.room-filter svg{
-
-    color:var(--primary);
-
+/* 원래(.top-toolbar 안) 420px는 이 줄에 넣기엔 넓어서 좁혔다. */
+.floor-filter-row__right .toolbar-search{
+    width:240px;
 }
 
-.room-filter button{
+/* ===========================
+   STATUS FILTER (필터 아이콘 + 체크박스 팝오버)
+=========================== */
 
+.status-filter{
+    position:relative;
+    flex-shrink:0;
+}
+
+.status-filter-btn{
     display:inline-flex;
-
     align-items:center;
-
     gap:8px;
-
-    border:none;
-
-    background:var(--surface);
-
-    color:var(--text);
-
-    padding:11px 18px;
-
-    border-radius:10px;
-
-    cursor:pointer;
-
-    transition:.25s;
-
     border:1px solid var(--border);
-
+    background:var(--surface);
+    color:var(--text);
+    padding:11px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.25s;
 }
 
-.room-filter button .legend{
-    width:11px;
-    height:11px;
+.status-filter-btn svg{
+    color:var(--primary);
 }
 
-.room-filter button:hover{
-
+.status-filter-btn:hover{
     background:var(--surface2);
-
 }
 
-.room-filter button.active{
-
+.status-filter-btn.active{
     background:var(--primary);
-
     color:white;
-
     border-color:transparent;
+}
 
+.status-filter-btn.active svg{
+    color:white;
+}
+
+.status-filter-count{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border-radius:999px;
+    background:rgba(255,255,255,.28);
+    font-size:11.5px;
+    font-weight:700;
+}
+
+.status-filter-popover{
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    z-index:50;
+    width:200px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:10px;
+}
+
+.status-filter-popover__header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:4px 6px 8px;
+    margin-bottom:4px;
+    border-bottom:1px solid var(--border);
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text-secondary);
+}
+
+.status-filter-clear{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    border:none;
+    background:transparent;
+    color:var(--primary);
+    font-size:11.5px;
+    font-weight:600;
+    cursor:pointer;
+    padding:2px 4px;
+}
+
+.status-filter-clear:disabled{
+    color:var(--text-secondary);
+    cursor:default;
+    opacity:.5;
+}
+
+.status-filter-option{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 6px;
+    border-radius:8px;
+    font-size:13.5px;
+    color:var(--text);
+    cursor:pointer;
+}
+
+.status-filter-option:hover{
+    background:var(--surface2);
+}
+
+.status-filter-option input{
+    cursor:pointer;
+}
+
+.status-filter-option .legend{
+    width:10px;
+    height:10px;
 }
 
 /* ==========================================================
@@ -852,12 +1174,14 @@
 
     overflow:hidden;
 
-    /* 예전에는 높이가 640px로 고정돼 있어서 우측 패널(환자정보+알람+이벤트)이 더 길어지면
-       배치도 아래로 빈 공간이 남았다. .dashboard가 align-items:stretch로 바뀐 것과 맞춰
-       그리드 셀 높이에 맞춰 늘어나도록 하고, 화면이 낮을 때를 대비한 최소 높이만 남긴다 (T46). */
-    height:100%;
+    /* 하단 패널(환자정보+알람+이벤트)이 배치도 아래로 가로 배치되면서, .dashboard(flex column)의
+       남은 세로 공간을 하단 패널과 5:1 비율로 나눠 갖는다 — 배치도를 더 크게 키워달라는
+       피드백 반영(2026-07-22, 3:1→4:1→5:1로 재요청마다 추가 확대. 페이지 상단 타이틀
+       제거로 확보된 공간도 이쪽으로 흡수). 고정 px 대신 비율 분배라, 화면 높이가 낮아도
+       양쪽이 함께 줄어들 뿐 화면 밖으로 넘치지 않는다. */
+    flex:5;
 
-    min-height:640px;
+    min-height:260px;
 
 }
 
@@ -890,22 +1214,6 @@
     font-size:22px;
 
     color:var(--text);
-
-}
-
-.floor-header span{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:8px;
-
-    margin-top:6px;
-
-    font-size:13px;
-
-    color:var(--text-secondary);
 
 }
 
@@ -1230,27 +1538,24 @@
 }
 
 /* ==========================================================
-   RIGHT PANEL
+   BOTTOM PANELS (구 RIGHT PANEL — 배치도 하단에 가로 배치)
 ========================================================== */
 
-.right-panel{
-
-    /* 그리드 3번째 컬럼(340px)과 폭을 맞춰 우측 패널이 셀 밖으로 삐져나오지 않게 한다. */
-    width:100%;
+.bottom-panels{
 
     display:grid;
 
-    grid-template-rows:
-
-        360px
-
-        300px
-
-        1fr;
+    grid-template-columns:repeat(3,1fr);
 
     gap:20px;
 
-    min-height:0;
+    /* 배치도(.floor-canvas)가 이 영역의 5배 세로 크기를 갖도록 1:5 비율로 남은 공간을
+       나눠 갖는다 — 화면 높이가 낮아지면 배치도와 함께 비례해서 줄어들 뿐 화면 밖으로
+       넘치지 않고, 그 대신 패널 내부(알람 목록/이벤트 목록/환자 병상 목록)만 넘칠 때
+       자체 스크롤된다 (2026-07-22 피드백 — 스크롤 없는 고정 화면, 배치도 확대). */
+    flex:1;
+
+    min-height:140px;
 
 }
 
@@ -1677,6 +1982,14 @@
 
     box-shadow:var(--shadow);
 
+    /* .bottom-panels의 고정 행 높이(320px)에 맞춰 채우고, 목록만 내부 스크롤되도록 한다
+       (2026-07-22 피드백 — 우측 세로 패널 → 배치도 하단 가로 배치). */
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
 }
 
 .event-title{
@@ -1684,6 +1997,8 @@
     padding:22px;
 
     border-bottom:1px solid var(--border);
+
+    flex-shrink:0;
 
 }
 
@@ -1701,7 +2016,9 @@
 
     flex-direction:column;
 
-    max-height:420px;
+    flex:1;
+
+    min-height:0;
 
     overflow-y:auto;
 
@@ -2142,26 +2459,6 @@ button,
    RESPONSIVE
 ========================================================== */
 
-@media(max-width:1700px){
-
-    .dashboard{
-
-        grid-template-columns:1fr 330px;
-
-    }
-
-}
-
-@media(max-width:1450px){
-
-    .dashboard{
-
-        grid-template-columns:minmax(0,1fr) 320px;
-
-    }
-
-}
-
 @media(max-width:1280px){
 
     .system-status{
@@ -2180,12 +2477,6 @@ button,
 
 @media(max-width:1100px){
 
-    .dashboard{
-
-        grid-template-columns:1fr;
-
-    }
-
     .floor-selector{
 
         width:100%;
@@ -2200,9 +2491,33 @@ button,
 
     }
 
-    .right-panel{
+    .bottom-panels{
 
-        width:100%;
+        grid-template-columns:1fr;
+
+        flex:none;
+
+        min-height:0;
+
+    }
+
+    /* 좁은 화면에서는 하단 패널 3개가 세로로 쌓여 고정 화면 안에 다 들어가지 않을 수
+       있으므로, 이 구간에서만 페이지 스크롤을 허용해 내용이 가려지지 않게 한다. */
+    .content--fixed{
+
+        overflow:auto;
+
+    }
+
+    .dashboard{
+
+        flex:none;
+
+    }
+
+    .floor-canvas{
+
+        flex:none;
 
     }
 
@@ -2568,6 +2883,37 @@ button,
 
     overflow:auto;
 
+    /* max-height 없이는 방이 많아질수록 이 목록의 "내용 기준 자연 높이"가 계속 커져서,
+       .editor-main 그리드 행 전체가 방 개수에 비례해 길어지는 문제가 있었다(그 결과
+       옆 배치도 박스도 함께 늘어나며 SVG가 세로로 가운데 정렬되어 위쪽에 빈 공간이 생기고
+       "박스가 아래로 내려가 보이는" 현상으로 나타났다). 높이를 고정 상한으로 막아서
+       방이 아무리 많아져도 grid 행 크기가 방 개수와 무관하게 유지되도록 한다
+       (2026-07-22 피드백). */
+    max-height:60vh;
+
+}
+
+/* 다크 모드에서만 스크롤바를 패널 색상에 맞게 다시 칠한다 — 라이트 모드는 기본
+   브라우저 스크롤바를 그대로 유지한다(2026-07-22 피드백). */
+[data-theme="dark"] .room-list{
+    scrollbar-color: var(--border) transparent;
+}
+
+[data-theme="dark"] .room-list::-webkit-scrollbar{
+    width:8px;
+}
+
+[data-theme="dark"] .room-list::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+[data-theme="dark"] .room-list::-webkit-scrollbar-thumb{
+    background:var(--border);
+    border-radius:8px;
+}
+
+[data-theme="dark"] .room-list::-webkit-scrollbar-thumb:hover{
+    background:var(--text-secondary);
 }
 
 .room-item{
@@ -3039,23 +3385,6 @@ button,
     cursor:crosshair;
 }
 
-.editor-minimap{
-    position:absolute;
-    right:14px;
-    bottom:14px;
-    width:160px;
-    height:112px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    overflow:hidden;
-    background:var(--surface);
-    box-shadow:var(--shadow);
-}
-
-.editor-minimap svg{
-    width:100%;
-    height:100%;
-}
 
 .editor-footer{
     display:flex;
@@ -3097,18 +3426,49 @@ button,
     overflow-y:auto;
 }
 
-.room-property.empty{
+/* 방을 선택하지 않았을 때 안내 문구 블록 — 예전에는 .room-property 전체에 .empty를
+   줘서 패널 자체를 세로 중앙 정렬했지만, 이제 패널 맨 아래에 전체 구성도 미리보기가
+   항상 붙어있어야 해서 안내 문구만 감싸는 별도 블록으로 분리했다 (2026-07-22 피드백). */
+.room-property-empty{
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     gap:10px;
+    padding:32px 0;
     color:var(--text-secondary);
 }
 
 .room-property h2{
     font-size:15px;
     margin:0 0 16px;
+}
+
+/* ==========================================================
+   MINIMAP PREVIEW (Room Property 패널 맨 아래)
+========================================================== */
+
+.minimap-preview{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+}
+
+.minimap-preview__label{
+    font-size:12px;
+    font-weight:700;
+    color:var(--text-secondary);
+    margin-bottom:8px;
+}
+
+.minimap-preview__svg{
+    display:block;
+    width:100%;
+    /* 가로 100% + 실제 평면도 비율(1000:700)로 세로를 자동 계산 — 비율이 깨지지 않는다. */
+    aspect-ratio:1000 / 700;
+    background:var(--map-background);
+    border:1px solid var(--border);
+    border-radius:10px;
 }
 
 .property-grid{
@@ -3136,6 +3496,13 @@ button,
     font-size:13px;
     font-family:inherit;
     outline:none;
+}
+
+/* 호실 번호 — Enter로 줄바꿈을 입력할 수 있도록 textarea로 바뀌었다. 가로 리사이즈는
+   막아서(패널 폭 300px을 벗어나지 않도록) 세로로만 늘릴 수 있게 한다. */
+.room-name-textarea{
+    resize:vertical;
+    line-height:1.4;
 }
 
 .property-grid input:focus,

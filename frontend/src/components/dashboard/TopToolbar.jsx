@@ -11,7 +11,6 @@ import {
     ChevronDown,
 } from "lucide-react";
 
-import SearchBar from "../layout/Header/SearchBar";
 import FullscreenButton from "./FullscreenButton";
 import { useDashboardStore } from "../../store/useDashboardStore";
 
@@ -30,7 +29,7 @@ function toISODate(d) {
     return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
 }
 
-function TopToolbar({ keyword = "", onKeywordChange = () => {} }) {
+function TopToolbar() {
     const [simOpen, setSimOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(() => toISODate(new Date()));
     const dateInputRef = useRef(null);
@@ -88,15 +87,6 @@ function TopToolbar({ keyword = "", onKeywordChange = () => {} }) {
 
     return (
         <div className="top-toolbar">
-
-            <div className="toolbar-left">
-                <SearchBar
-                    className="toolbar-search"
-                    placeholder="병실 / 환자 검색"
-                    value={keyword}
-                    onChange={onKeywordChange}
-                />
-            </div>
 
             <div className="toolbar-right">
 

@@ -92,7 +92,7 @@ function RoomsManager() {
                                 </div>
 
                                 <div className="top-risk-loc">
-                                    {p.floorName} {p.roomNo}호 · {p.bed.label}
+                                    {p.floorName} {p.roomNo} · {p.bed.label}
                                 </div>
 
                                 <div className="top-risk-counts">
@@ -191,7 +191,7 @@ function RoomsManager() {
                                     >
                                         <span className="room-status" style={{ background: STATUS_META[status]?.color }} />
                                         <BedDouble size={16} />
-                                        <strong>{floor.name} {room.roomNo}{isPatientRoom ? "호" : ""}</strong>
+                                        <strong>{floor.name} {room.roomNo}</strong>
                                         {ROOM_TYPES[room.type]?.label && ROOM_TYPES[room.type].label !== room.roomNo && (
                                             <span className="room-manage-type">{ROOM_TYPES[room.type].label}</span>
                                         )}

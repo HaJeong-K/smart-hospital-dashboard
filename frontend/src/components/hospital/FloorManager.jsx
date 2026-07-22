@@ -44,6 +44,12 @@ function FloorManager({
 
             sensors: [],
 
+            walls: [],
+
+            doors: [],
+
+            structures: [],
+
             beds: 0,
 
         };

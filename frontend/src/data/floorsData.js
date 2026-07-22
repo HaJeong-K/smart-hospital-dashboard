@@ -13,6 +13,9 @@
 // 연결하지 않고 버추얼 인터페이스로 동작):
 //   { deviceId, floorId, roomId, zoneId, eventType: 'fall'|'breath_abnormal'|'inactivity'|'sensor_error', confidence, ts }
 
+// 계단/엘리베이터는 여기(방 유형)에 없다 — 방이 아니라 문(door)과 동일하게 순수 구조
+// 심볼이라 floor.structures에 별도로 저장되고, Floor Editor 전용 도구로 바로 놓는다
+// (utils/structureGeometry.js의 createStructure 참고, 2026-07-22 피드백).
 export const ROOM_TYPES = {
     patient: { label: "병실" },
     toilet: { label: "공용화장실" },

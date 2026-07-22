@@ -22,7 +22,7 @@ function RoomEditor({ rooms, selectedRoom, setSelectedRoom, setRooms }) {
 
     const removeRoom = (e, room) => {
         e.stopPropagation();
-        if (!window.confirm(`${room.roomNo}호를 삭제하시겠습니까?`)) return;
+        if (!window.confirm(`${room.roomNo}을(를) 삭제하시겠습니까?`)) return;
         setRooms?.((prev) => prev.filter((item) => item.id !== room.id));
         if (selectedRoom?.id === room.id) setSelectedRoom(null);
     };
@@ -72,7 +72,7 @@ function RoomEditor({ rooms, selectedRoom, setSelectedRoom, setRooms }) {
                             <div className="room-main">
                                 <div className="room-top">
                                     <BedDouble size={15} />
-                                    <strong>{room.roomNo}호</strong>
+                                    <strong>{room.roomNo}</strong>
                                     {status !== "normal" && (
                                         <ShieldAlert size={14} color="var(--danger)" />
                                     )}

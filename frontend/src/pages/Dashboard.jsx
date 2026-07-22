@@ -12,8 +12,8 @@ import EventTimeline from "../components/event/EventTimeline";
 
 import MonitoringKpiPanel from "../components/dashboard/MonitoringKpiPanel";
 import TopToolbar from "../components/dashboard/TopToolbar";
-import SystemStatus from "../components/dashboard/SystemStatus";
 import RoomFilter from "../components/dashboard/RoomFilter";
+import SearchBar from "../components/layout/Header/SearchBar";
 
 // "Monitoring" 화면 — 병원 전체 실시간 관제(핵심 기능 정리 기준).
 // 예전에는 사이드바의 "대시보드"와 "모니터링"이 둘 다 이 화면을 가리켜 사실상 중복이었고,
@@ -27,8 +27,20 @@ function Dashboard() {
     const selectedRoomId = useDashboardStore((s) => s.selectedRoomId);
     const setSelectedRoomId = useDashboardStore((s) => s.setSelectedRoomId);
 
-    const [filter, setFilter] = useState("all");
+    // 상태 필터 — 다중 선택(체크박스). 빈 Set이면 필터링 없이 전체 표시.
+    const [filters, setFilters] = useState(() => new Set());
     const [keyword, setKeyword] = useState("");
+
+    const toggleFilter = (key) => {
+        setFilters((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+    };
+
+    const clearFilters = () => setFilters(new Set());
 
     const floor = useMemo(
         () => floors.find((f) => f.id === selectedFloorId) || floors[0] || null,
@@ -58,12 +70,12 @@ function Dashboard() {
 
     const filteredFloor = useMemo(() => {
         if (!searchedFloor) return searchedFloor;
-        if (filter === "all") return searchedFloor;
+        if (filters.size === 0) return searchedFloor;
         return {
             ...searchedFloor,
-            rooms: searchedFloor.rooms.filter((room) => room.status.room === filter),
+            rooms: searchedFloor.rooms.filter((room) => filters.has(room.status.room)),
         };
-    }, [searchedFloor, filter]);
+    }, [searchedFloor, filters]);
 
     if (!floor) {
         return (
@@ -75,30 +87,35 @@ function Dashboard() {
 
     return (
         <>
-            <div className="page-title">
-                <div>
-                    <h1>Monitoring</h1>
-                    <p>병원 전체의 실시간 상태를 한눈에 관제합니다.</p>
-                </div>
-            </div>
-
-            <SystemStatus />
-
             <MonitoringKpiPanel />
 
-            <TopToolbar keyword={keyword} onKeywordChange={setKeyword} />
-
-            <RoomFilter selected={filter} onChange={setFilter} />
+            <TopToolbar />
 
             {/* 예전에는 층 선택 버튼이 세로 80px 칼럼을 차지해서 배치도 표현 영역이 좁았다.
                 가로 배치로 바꿔 그 칼럼을 없애고, 확보된 폭만큼 배치도(.floor-canvas)가
-                실제로 넓어지도록 그리드 자체를 2단(배치도 + 우측 패널)으로 재구성했다 (T51). */}
-            <FloorSelector
-                floors={floors}
-                selectedFloor={floor}
-                onChange={(value) => setSelectedFloorId(value.id)}
-                variant="horizontal"
-            />
+                실제로 넓어지도록 그리드 자체를 2단(배치도 + 우측 패널)으로 재구성했다 (T51).
+                상태 필터는 더 이상 전체 줄을 차지하는 버튼 목록이 아니라, 층 선택과 같은 줄
+                우측 끝의 아이콘 버튼(클릭 시 체크박스 팝오버)으로 옮겼고, 병실/환자 검색창도
+                별도 툴바 줄이 아니라 그 필터 바로 옆으로 함께 옮겼다 (2026-07-22 피드백). */}
+            <div className="floor-filter-row">
+                <FloorSelector
+                    floors={floors}
+                    selectedFloor={floor}
+                    onChange={(value) => setSelectedFloorId(value.id)}
+                    variant="horizontal"
+                />
+
+                <div className="floor-filter-row__right">
+                    <SearchBar
+                        className="toolbar-search"
+                        placeholder="병실 / 환자 검색"
+                        value={keyword}
+                        onChange={setKeyword}
+                    />
+
+                    <RoomFilter selected={filters} onToggle={toggleFilter} onClear={clearFilters} />
+                </div>
+            </div>
 
             <div className="dashboard">
                 <FloorCanvas
@@ -106,7 +123,10 @@ function Dashboard() {
                     onRoomClick={(room) => setSelectedRoomId(room.id)}
                 />
 
-                <div className="right-panel">
+                {/* 우측 세로 패널(환자정보/알람/이벤트로그)이었던 3개를 배치도 하단에
+                    가로로 나란히 배치 — 화면 전체가 스크롤 없이 한 화면(뷰포트)에 고정되도록
+                    한다 (2026-07-22 피드백). */}
+                <div className="bottom-panels">
                     <PatientPanel floorId={floor.id} room={selectedRoom} />
 
                     <AlarmPanel />

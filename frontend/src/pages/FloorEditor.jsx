@@ -11,6 +11,9 @@ import {
     BedDouble,
     Radar,
     Image,
+    Minus,
+    DoorOpen,
+    Footprints,
 } from "lucide-react";
 
 import EditorToolbar from "../components/editor/EditorToolbar";
@@ -40,6 +43,9 @@ function FloorEditor() {
             name: "Floor",
             floorMap: { type: "image", src: null, width: 1000, height: 700 },
             rooms: [],
+            walls: [],
+            doors: [],
+            structures: [],
         };
 
     const [background, setBackground] = useState(
@@ -52,11 +58,32 @@ function FloorEditor() {
 
     const [selectedRoom, setSelectedRoom] = useState(null);
 
+    // 벽/문 — 방(room)과 달리 센서·환자와 무관한 순수 건물 구조 요소라 별도 배열로 관리한다
+    // (2026-07-22 피드백 — 실제 건물 구조 표현).
+    const [walls, setWalls] = useState(floor.walls || []);
+    const [doors, setDoors] = useState(floor.doors || []);
+    const [selectedWall, setSelectedWall] = useState(null);
+    const [selectedDoor, setSelectedDoor] = useState(null);
+
+    // 계단/엘리베이터 — 문(door)과 동일하게 방(room)이 아닌 순수 구조 심볼로 별도 관리한다
+    // (2026-07-22 피드백 — "문처럼 심볼을 두고 선택하게" 해달라는 요청 반영).
+    const [structures, setStructures] = useState(floor.structures || []);
+    const [selectedStructure, setSelectedStructure] = useState(null);
+
     const [zoom, setZoom] = useState(100);
 
     const [grid, setGrid] = useState(true);
 
     const [snap, setSnap] = useState(false);
+
+    // "사각형"(드래그로 즉시 생성, draw.io 스타일)이 기본값 — 점을 하나씩 찍는 "다각형"
+    // 모드보다 훨씬 간편해서 대부분의(직사각형) 병실은 이걸로 충분하다 (2026-07-22 피드백).
+    const [drawMode, setDrawMode] = useState("rect");
+
+    // 배치도 전체(방+벽+문)를 한꺼번에 감싸는 바운딩 박스 + 모서리 리사이즈 핸들을
+    // 켜고 끄는 토글 — 켜져 있는 동안 모서리를 드래그하면 전체가 비율대로 확대/축소된다
+    // (2026-07-22 피드백 — "전체 잡아서 드래그로 크기 늘리기").
+    const [groupSelect, setGroupSelect] = useState(false);
 
     const canvasRef = useRef(null);
 
@@ -84,9 +111,18 @@ function FloorEditor() {
 
     }, [rooms]);
 
+    // RoomProperty에 넘길 "살아있는" 선택 방 — selectedRoom은 선택/생성된 시점의 스냅샷이라,
+    // 그 이후 RoomProperty에서 값을 바꿔도(호실 번호 입력, 병상 수 +/- 등) rooms 배열은
+    // 정상적으로 갱신되지만 selectedRoom 자체는 갱신되지 않아 입력창에 반영되지 않는(입력이
+    // 안 먹는 것처럼 보이는) 버그가 있었다. rooms에서 매번 다시 찾아 최신 값을 넘긴다.
+    const selectedRoomLive = useMemo(
+        () => rooms.find((r) => r.id === selectedRoom?.id) || null,
+        [rooms, selectedRoom],
+    );
+
     const saveFloor = () => {
 
-        saveFloorRooms(floorId, rooms, { src: background });
+        saveFloorRooms(floorId, rooms, { src: background }, walls, doors, structures);
 
         alert("저장되었습니다. 대시보드에도 즉시 반영됩니다.");
 
@@ -177,6 +213,30 @@ function FloorEditor() {
                             <BedDouble size={16} />
 
                             {bedCount} Beds
+
+                        </span>
+
+                        <span>
+
+                            <Minus size={16} />
+
+                            {walls.length} Walls
+
+                        </span>
+
+                        <span>
+
+                            <DoorOpen size={16} />
+
+                            {doors.length} Doors
+
+                        </span>
+
+                        <span>
+
+                            <Footprints size={16} />
+
+                            {structures.length} Structures
 
                         </span>
 
@@ -284,6 +344,14 @@ function FloorEditor() {
 
                 onRedo={redo}
 
+                drawMode={drawMode}
+
+                setDrawMode={setDrawMode}
+
+                groupSelect={groupSelect}
+
+                setGroupSelect={setGroupSelect}
+
             />
 
             <div className="editor-main">
@@ -322,13 +390,45 @@ function FloorEditor() {
 
                     snap={snap}
 
+                    drawMode={drawMode}
+
+                    walls={walls}
+
+                    setWalls={setWalls}
+
+                    doors={doors}
+
+                    setDoors={setDoors}
+
+                    selectedWall={selectedWall}
+
+                    setSelectedWall={setSelectedWall}
+
+                    selectedDoor={selectedDoor}
+
+                    setSelectedDoor={setSelectedDoor}
+
+                    structures={structures}
+
+                    setStructures={setStructures}
+
+                    selectedStructure={selectedStructure}
+
+                    setSelectedStructure={setSelectedStructure}
+
+                    groupSelect={groupSelect}
+
                 />
 
                 <RoomProperty
 
-                    room={selectedRoom}
+                    room={selectedRoomLive}
 
                     setRooms={setRooms}
+
+                    rooms={rooms}
+
+                    background={background}
 
                 />
 
@@ -342,7 +442,7 @@ function FloorEditor() {
 
                         병실이 없습니다.
 
-                        Polygon을 그려 병실을 생성하세요.
+                        캔버스를 클릭+드래그해서 병실을 생성하세요.
 
                     </div>
 
@@ -391,6 +491,36 @@ function FloorEditor() {
                         {" "}
 
                         {bedCount}
+
+                    </span>
+
+                    <span>
+
+                        Walls :
+
+                        {" "}
+
+                        {walls.length}
+
+                    </span>
+
+                    <span>
+
+                        Doors :
+
+                        {" "}
+
+                        {doors.length}
+
+                    </span>
+
+                    <span>
+
+                        Structures :
+
+                        {" "}
+
+                        {structures.length}
 
                     </span>
 

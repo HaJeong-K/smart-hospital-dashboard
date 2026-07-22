@@ -6,6 +6,8 @@ function RoomOverlay({
 
     onRoomClick,
 
+    viewBox,
+
 }) {
 
     return (
@@ -21,6 +23,8 @@ function RoomOverlay({
                         key={room.id}
 
                         room={room}
+
+                        viewBox={viewBox}
 
                         onClick={()=>
 

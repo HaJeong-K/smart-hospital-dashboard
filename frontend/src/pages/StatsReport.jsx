@@ -135,7 +135,7 @@ function StatsReport() {
                     roomFrequency.map((r) => (
                         <div className="stat-bar-row" key={r.key}>
                             <span className="stat-bar-label">
-                                {r.floorName} {r.roomNo}{r.roomType === "patient" ? "호" : ""} {r.count}건
+                                {r.floorName} {r.roomNo} {r.count}건
                             </span>
                             <Bar value={r.count} total={maxRoomFreq} color="var(--room-warning)" />
                         </div>
@@ -186,7 +186,7 @@ function StatsReport() {
                     sensorErrorStats.rows.map((r) => (
                         <div className="stat-bar-row" key={r.key}>
                             <span className="stat-bar-label">
-                                <Wrench size={13} /> {r.floorName} {r.roomNo}{r.roomType === "patient" ? "호" : ""} · {r.zoneLabel} {r.count}건
+                                <Wrench size={13} /> {r.floorName} {r.roomNo} · {r.zoneLabel} {r.count}건
                             </span>
                             <Bar value={r.count} total={maxSensorError} color="var(--room-sensor)" />
                         </div>

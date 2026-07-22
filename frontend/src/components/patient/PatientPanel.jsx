@@ -126,7 +126,7 @@ function PatientPanel({ floorId, room }) {
 
                 <div>
 
-                    <h2>{room.roomNo}{isPatientRoom ? "호" : ""}</h2>
+                    <h2>{room.roomNo}</h2>
                     <span>
                         {isPatientRoom ? `${room.beds.length}인실 · 입실 ${occupied}/${room.beds.length}` : room.roomNo}
                     </span>

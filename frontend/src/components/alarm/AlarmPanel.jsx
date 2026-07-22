@@ -54,7 +54,7 @@ function AlarmPanel() {
 
                                 <strong>
                                     {alarm.floorName} {alarm.roomNo}
-                                    {alarm.roomType === "patient" ? "호" : ""} · {alarm.zoneLabel}
+                                    {" "}· {alarm.zoneLabel}
                                 </strong>
 
                                 <span>

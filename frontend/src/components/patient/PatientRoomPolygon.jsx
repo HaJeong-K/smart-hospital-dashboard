@@ -33,7 +33,7 @@ function PatientRoomPolygon({ room, onClick }) {
             <polygon
                 points={points}
                 fill={STATUS_META[status]?.color}
-                stroke="white"
+                stroke="var(--room-border)"
                 strokeWidth={hover ? 6 : 3}
                 opacity={hover ? 1 : 0.88}
             />

@@ -124,7 +124,7 @@ function AlarmsManager() {
                                 return (
                                     <tr key={a.id}>
                                         <td>{formatDateTime(a.time)}</td>
-                                        <td>{a.floorName} {a.roomNo}{a.roomType === "patient" ? "호" : ""} · {a.zoneLabel}</td>
+                                        <td>{a.floorName} {a.roomNo} · {a.zoneLabel}</td>
                                         <td><Icon size={14} /> <span className={`legend ${statusKey}`} /> {a.typeLabel}</td>
                                         <td>
                                             <span className={`badge-tag ${SEVERITY_CSS[statusKey]}`}>
@@ -212,7 +212,7 @@ function AlarmsManager() {
                             {filteredLog.slice(0, 150).map((e) => (
                                 <tr key={`${e.id}-${e.action}`}>
                                     <td>{formatDateTime(e.time)}</td>
-                                    <td>{e.floorName} {e.roomNo}{e.roomType === "patient" ? "호" : ""} · {e.zoneLabel}</td>
+                                    <td>{e.floorName} {e.roomNo} · {e.zoneLabel}</td>
                                     <td>{e.typeLabel}{e.patientName ? ` · ${e.patientName}` : ""}</td>
                                     <td>
                                         {e.action === "occurred" ? (
