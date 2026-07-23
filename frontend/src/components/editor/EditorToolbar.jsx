@@ -1,7 +1,6 @@
 import { useRef } from "react";
 
 import {
-    Upload,
     Save,
     FolderOpen,
     Undo2,
@@ -20,11 +19,10 @@ import {
     Footprints,
     Expand,
     ArrowUpDown,
+    MoveUpRight,
 } from "lucide-react";
 
 function EditorToolbar({
-
-    setBackground,
 
     rooms,
 
@@ -56,23 +54,7 @@ function EditorToolbar({
 
 }) {
 
-    const imageInputRef = useRef(null);
-
     const jsonInputRef = useRef(null);
-
-    const uploadImage = (e) => {
-
-        const file = e.target.files?.[0];
-
-        if (!file) return;
-
-        setBackground(
-
-            URL.createObjectURL(file)
-
-        );
-
-    };
 
     const saveJson = () => {
 
@@ -323,37 +305,25 @@ function EditorToolbar({
 
                 </button>
 
-            </div>
-
-            <div className="toolbar-group">
-
                 <button
 
-                    className="toolbar-btn"
+                    className={`toolbar-btn ${drawMode === "escalator" ? "active" : ""}`}
 
-                    onClick={() => imageInputRef.current.click()}
+                    onClick={() => setDrawMode("escalator")}
+
+                    title="클릭+드래그로 에스컬레이터 심볼을 바로 놓습니다 (문처럼 방과 무관한 구조 심볼)"
 
                 >
 
-                    <Upload size={18} />
+                    <MoveUpRight size={18} />
 
-                    PNG 업로드
+                    에스컬레이터
 
                 </button>
 
-                <input
+            </div>
 
-                    hidden
-
-                    ref={imageInputRef}
-
-                    type="file"
-
-                    accept="image/*"
-
-                    onChange={uploadImage}
-
-                />
+            <div className="toolbar-group">
 
                 <button
 

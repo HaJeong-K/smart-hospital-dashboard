@@ -1,4 +1,4 @@
-import { worstStatus, ALARM_TYPE_TO_STATUS } from "../data/floorsData";
+import { worstStatus, ALARM_TYPE_TO_STATUS, ROOM_TYPES } from "../data/floorsData";
 
 // hospital.floors 전체를 순회하며 {floor, room} 평탄화 배열로
 export function flattenRooms(floors) {
@@ -201,11 +201,11 @@ export function getEventTrend(eventLog, period = "day", count = 7) {
     return buckets.map((b) => ({ label: b.label, value: counts.get(b.key) || 0 }));
 }
 
-// 호실별 위험 발생 빈도 — eventLog의 "occurred" 이벤트를 호실 단위로 묶어 많이 발생한 순으로 정렬한다.
-export function getRoomFrequency(eventLog, limit = 8) {
+// 호실 단위로 이벤트를 묶어 많이 발생한 순으로 정렬하는 공용 집계 로직 —
+// getRoomFrequency(전체 유형 합산)과 getRoomFrequencyByType(유형별로 따로) 둘 다 이걸 쓴다.
+function aggregateRoomFrequency(events, limit) {
     const map = new Map();
-    for (const e of eventLog) {
-        if (e.action !== "occurred") continue;
+    for (const e of events) {
         const key = `${e.floorId}::${e.roomId}`;
         if (!map.has(key)) {
             map.set(key, {
@@ -219,6 +219,60 @@ export function getRoomFrequency(eventLog, limit = 8) {
         map.get(key).count += 1;
     }
     return [...map.values()].sort((a, b) => b.count - a.count).slice(0, limit);
+}
+
+// 호실별 위험 발생 빈도(전체 유형 합산) — eventLog의 "occurred" 이벤트를 호실 단위로 묶어 많이 발생한 순으로 정렬한다.
+export function getRoomFrequency(eventLog, limit = 8) {
+    return aggregateRoomFrequency(eventLog.filter((e) => e.action === "occurred"), limit);
+}
+
+// 특정 이벤트 유형(낙상=fall, 호흡이상=breath 등)만 따로 골라 호실별 발생 빈도를 집계한다.
+// "낙상은 유독 어디서 많이 발생하나", "호흡이상은 유독 어디서 많이 발생하나"를
+// 따로 확인하기 위함 — getRoomFrequency(전체 합산)만으로는 유형별 원인 파악이 어렵다.
+export function getRoomFrequencyByType(eventLog, type, limit = 8) {
+    return aggregateRoomFrequency(
+        eventLog.filter((e) => e.action === "occurred" && e.type === type),
+        limit,
+    );
+}
+
+// 하루를 4개 시간대(심야 0-6시/오전 6-12시/오후 12-18시/저녁 18-24시)로 나눠 각 시간대에
+// 낙상/호흡이상/전체 이벤트가 몇 건 발생했는지 집계한다 — "야간에 특히 낙상이 몰린다" 같은
+// 패턴을 하루 중 시각 기준으로 보여준다(일/주/월 추이는 "언제 날짜"인지만 보여줘서 겹치지 않음).
+const TIME_SLOTS = [
+    { key: "dawn", label: "심야 (0-6시)", from: 0, to: 6 },
+    { key: "morning", label: "오전 (6-12시)", from: 6, to: 12 },
+    { key: "afternoon", label: "오후 (12-18시)", from: 12, to: 18 },
+    { key: "evening", label: "저녁 (18-24시)", from: 18, to: 24 },
+];
+
+export function getTimeOfDayStats(eventLog) {
+    const buckets = TIME_SLOTS.map((slot) => ({ ...slot, total: 0, fall: 0, breath: 0 }));
+    for (const e of eventLog) {
+        if (e.action !== "occurred") continue;
+        const hour = new Date(e.time).getHours();
+        const bucket = buckets.find((b) => hour >= b.from && hour < b.to);
+        if (!bucket) continue;
+        bucket.total += 1;
+        if (e.type === "fall") bucket.fall += 1;
+        if (e.type === "breath") bucket.breath += 1;
+    }
+    return buckets;
+}
+
+// 구역 유형(병실/공용화장실/복도/공용공간/처치실/대기실)별 이벤트 발생 건수 —
+// "화장실에서 낙상이 압도적으로 많다" 같은 패턴은 개별 호실 순위보다 유형별 집계에서
+// 더 잘 드러난다.
+export function getZoneTypeStats(eventLog) {
+    const counts = new Map();
+    for (const e of eventLog) {
+        if (e.action !== "occurred") continue;
+        const type = e.roomType || "patient";
+        counts.set(type, (counts.get(type) || 0) + 1);
+    }
+    return [...counts.entries()]
+        .map(([type, count]) => ({ type, label: ROOM_TYPES[type]?.label || type, count }))
+        .sort((a, b) => b.count - a.count);
 }
 
 // 평균 호흡수 변화 추이 — 실제 활력징후 시계열 로그가 아직 없으므로(60GHz 레이더 미연결,

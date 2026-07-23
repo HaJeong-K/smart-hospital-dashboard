@@ -65,6 +65,9 @@
 
     --room-sensor: #1e2430;
 
+    /* 상태 필터 선택 시, 선택되지 않은 상태의 방을 흐리게 표시하는 색 */
+    --room-dimmed: #cbd5e1;
+
     /* Hospital Map */
 
     --map-background: #f8fafc;
@@ -158,6 +161,9 @@
     --room-danger: #ef4444;
 
     --room-sensor: #0b0d12;
+
+    /* 상태 필터 선택 시, 선택되지 않은 상태의 방을 흐리게 표시하는 색 */
+    --room-dimmed: #333d4d;
 
     /* Hospital Map */
 

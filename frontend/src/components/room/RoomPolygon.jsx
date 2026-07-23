@@ -7,6 +7,8 @@ function RoomPolygon({
 
     room,
 
+    dimmed,
+
     onClick,
 
     viewBox,
@@ -45,7 +47,7 @@ function RoomPolygon({
 
         <g
 
-            className={`room ${room.status.room}`}
+            className={`room ${room.status.room} ${dimmed ? "dimmed" : ""}`}
 
             onMouseEnter={()=>setHover(true)}
 
@@ -65,7 +67,7 @@ function RoomPolygon({
 
                 points={points}
 
-                fill={colors[room.status.room]}
+                fill={dimmed ? "var(--room-dimmed)" : colors[room.status.room]}
 
                 stroke="var(--room-border)"
 

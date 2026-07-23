@@ -1,9 +1,7 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import {
     RefreshCw,
-    Download,
-    CalendarDays,
     ShieldAlert,
     HeartPulse,
     MoonStar,
@@ -24,60 +22,15 @@ const TEST_EVENT_OPTIONS = [
     { type: "sensor", label: "센서 오류 테스트", icon: Radar },
 ];
 
-function toISODate(d) {
-    const offset = d.getTimezoneOffset();
-    return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
-}
-
-function TopToolbar() {
+// children으로 넘어오는 내용(병실/환자 검색, 층 선택, 상태 필터)은 왼쪽에 배치한다 —
+// 예전엔 이 셋이 층 선택 줄로 따로 빠져 두 줄을 차지했는데, 공간이 남는다는 피드백에
+// 따라 한 줄에 왼쪽/오른쪽으로 나눠 담아 세로 공간을 절약한다.
+function TopToolbar({ children }) {
     const [simOpen, setSimOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(() => toISODate(new Date()));
-    const dateInputRef = useRef(null);
-    const floors = useDashboardStore((s) => s.hospital.floors);
     const triggerRandomAlarm = useDashboardStore((s) => s.triggerRandomAlarm);
-
-    const displayDate = new Date(`${selectedDate}T00:00:00`).toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        weekday: "short",
-    });
 
     const refresh = () => {
         window.location.reload();
-    };
-
-    // 현재 시설 전체 병실/구역/환자 현황을 CSV로 내보낸다 (통계 보고서 다운로드)
-    const downloadReport = () => {
-        const rows = [["층", "호실/구역", "유형", "병상", "환자명", "상태", "누적낙상", "누적호흡이상"]];
-        for (const floor of floors) {
-            for (const room of floor.rooms) {
-                if (room.type === "patient" && room.beds.length > 0) {
-                    for (const bed of room.beds) {
-                        rows.push([
-                            floor.name,
-                            room.roomNo,
-                            room.type,
-                            bed.label,
-                            bed.patient?.name || "공석",
-                            room.status.room,
-                            bed.patient?.fallCount || 0,
-                            bed.patient?.breathCount || 0,
-                        ]);
-                    }
-                } else {
-                    rows.push([floor.name, room.roomNo, room.type, "-", "-", room.status.room, "-", "-"]);
-                }
-            }
-        }
-        const csv = rows.map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
-        const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `현황리포트_${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
     };
 
     const simulate = (type) => {
@@ -88,34 +41,11 @@ function TopToolbar() {
     return (
         <div className="top-toolbar">
 
+            <div className="toolbar-left">
+                {children}
+            </div>
+
             <div className="toolbar-right">
-
-                {/* 예전에는 오늘 날짜만 표시하는 정적 텍스트였음 — 클릭하면 실제 브라우저 달력이
-                    떠서 연/월/일을 직접 선택할 수 있도록 숨겨진 date input을 함께 두고,
-                    showPicker()로 열어준다(미지원 브라우저에서는 포커스로 대체). */}
-                <div
-                    className="today-box"
-                    title="날짜 선택"
-                    onClick={() => {
-                        const el = dateInputRef.current;
-                        if (!el) return;
-                        if (typeof el.showPicker === "function") el.showPicker();
-                        else el.focus();
-                    }}
-                >
-
-                    <CalendarDays size={18} />
-
-                    <span>{displayDate}</span>
-
-                    <input
-                        ref={dateInputRef}
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                    />
-
-                </div>
 
                 <div style={{ position: "relative" }}>
                     <button
@@ -140,24 +70,14 @@ function TopToolbar() {
                 </div>
 
                 <button
-                    className="toolbar-button"
+                    className="toolbar-button icon-only"
                     onClick={refresh}
+                    title="새로고침"
                 >
                     <RefreshCw size={18} />
-
-                    새로고침
                 </button>
 
                 <FullscreenButton />
-
-                <button
-                    className="toolbar-button danger"
-                    onClick={downloadReport}
-                >
-                    <Download size={18} />
-
-                    Report
-                </button>
 
             </div>
 

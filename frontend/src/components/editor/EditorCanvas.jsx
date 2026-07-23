@@ -11,16 +11,17 @@ import { createWall, createDoor, findNearestWallPoint, createStructure } from ".
 const GRID = 20;
 const WALL_ANGLE_STEP = Math.PI / 4; // 45도 단위로 스냅 — 대부분의 벽은 수평/수직/45도 대각선
 
-// 사각형 드래그 모드별 미리보기 색상 — 방(파랑)/사각형 벽(회색)/계단(보라)/엘리베이터(청록)를
-// 구분해서 드래그 중에도 어떤 걸 만들고 있는지 헷갈리지 않도록 한다.
+// 사각형 드래그 모드별 미리보기 색상 — 방(파랑)/사각형 벽(회색)/계단(보라)/엘리베이터(청록)/
+// 에스컬레이터(주황)를 구분해서 드래그 중에도 어떤 걸 만들고 있는지 헷갈리지 않도록 한다.
 const RECT_PREVIEW_COLORS = {
     rect: { fill: "rgba(37,99,235,.18)", stroke: "#2563eb" },
     wallRect: { fill: "rgba(107,114,128,.18)", stroke: "#6b7280" },
     stairs: { fill: "rgba(124,58,237,.18)", stroke: "#7c3aed" },
     elevator: { fill: "rgba(13,148,136,.18)", stroke: "#0d9488" },
+    escalator: { fill: "rgba(234,88,12,.18)", stroke: "#ea580c" },
 };
 
-const STRUCTURE_MODES = new Set(["stairs", "elevator"]);
+const STRUCTURE_MODES = new Set(["stairs", "elevator", "escalator"]);
 
 // 직전 점(from) 기준으로 to 방향을 가장 가까운 45도(수평/수직/대각선) 각도로 스냅한다.
 // 거리는 실제 마우스 위치 그대로 유지하고 각도만 반듯하게 맞춘다 — 자유 곡선 벽을 손으로
@@ -78,6 +79,7 @@ const EditorCanvas = forwardRef(function EditorCanvas(
     const [draft, setDraft] = useState([]);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [spacePressed, setSpacePressed] = useState(false);
+    const [ctrlPressed, setCtrlPressed] = useState(false);
     const [panning, setPanning] = useState(false);
     const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
@@ -101,18 +103,27 @@ const EditorCanvas = forwardRef(function EditorCanvas(
     const last = useRef({ x: 0, y: 0 });
 
     /* ===========================
-       SPACE KEY (팬 모드 토글)
+       SPACE / CTRL KEY (팬 모드 토글)
     =========================== */
+    // 스페이스바를 누른 상태의 드래그로만 화면 이동(pan)이 가능했는데, 확대된 상태에서는
+    // 그리기 도구를 켜둔 채로도 바로 이동하고 싶다는 요청에 따라 Ctrl+좌클릭 드래그로도
+    // 동일하게 이동할 수 있도록 Ctrl 키 상태를 함께 추적한다.
     useEffect(() => {
         const keyDown = (e) => {
             if (e.code === "Space") {
                 e.preventDefault();
                 setSpacePressed(true);
             }
+            if (e.key === "Control") {
+                setCtrlPressed(true);
+            }
         };
         const keyUp = (e) => {
             if (e.code === "Space") {
                 setSpacePressed(false);
+            }
+            if (e.key === "Control") {
+                setCtrlPressed(false);
             }
         };
         window.addEventListener("keydown", keyDown);
@@ -153,7 +164,9 @@ const EditorCanvas = forwardRef(function EditorCanvas(
        마우스 이벤트
     =========================== */
     const mouseDown = (e) => {
-        if (spacePressed) {
+        // 스페이스바 드래그와 동일하게, Ctrl을 누른 채 좌클릭 드래그로도 화면을 이동할 수
+        // 있다 — 확대된 상태에서 그리기 도구를 계속 켜둔 채로 바로 이동하고 싶다는 요청 반영.
+        if (spacePressed || (e.ctrlKey && e.button === 0)) {
             setPanning(true);
             last.current = { x: e.clientX, y: e.clientY };
             return;
@@ -484,6 +497,7 @@ const EditorCanvas = forwardRef(function EditorCanvas(
                         {drawMode === "door" && (walls.length === 0 ? "먼저 벽을 그려주세요" : "벽 위를 클릭하면 문 생성")}
                         {drawMode === "stairs" && "드래그하여 계단 심볼 생성"}
                         {drawMode === "elevator" && "드래그하여 엘리베이터 심볼 생성"}
+                        {drawMode === "escalator" && "드래그하여 에스컬레이터 심볼 생성"}
                         {groupSelect && " · 모서리를 드래그하면 전체가 비율대로 확대/축소됩니다"}
                     </span>
                     <span>Zoom {zoom}%</span>
@@ -528,7 +542,13 @@ const EditorCanvas = forwardRef(function EditorCanvas(
                 <svg
                     ref={svgRef}
                     viewBox="0 0 1000 700"
-                    className="editor-svg"
+                    className={`editor-svg ${
+                        panning
+                            ? "editor-svg--panning"
+                            : spacePressed || ctrlPressed
+                              ? "editor-svg--pan"
+                              : ""
+                    }`}
                     onMouseDown={mouseDown}
                     onMouseMove={mouseMove}
                     onMouseUp={mouseUp}

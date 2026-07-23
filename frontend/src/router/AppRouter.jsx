@@ -8,6 +8,7 @@ import FloorEditor from "../pages/FloorEditor";
 import RoomsManager from "../pages/RoomsManager";
 import PatientsManager from "../pages/PatientsManager";
 import AlarmsManager from "../pages/AlarmsManager";
+import LogAnalysis from "../pages/LogAnalysis";
 import StatsReport from "../pages/StatsReport";
 import SettingsPage from "../pages/SettingsPage";
 
@@ -37,6 +38,11 @@ function AppRouter() {
                 <Route
                     path="/alarms"
                     element={<AlarmsManager />}
+                />
+
+                <Route
+                    path="/logs"
+                    element={<LogAnalysis />}
                 />
 
                 <Route

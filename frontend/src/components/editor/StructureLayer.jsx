@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 import StairsIcon from "../room/StairsIcon";
 import ElevatorIcon from "../room/ElevatorIcon";
+import EscalatorIcon from "../room/EscalatorIcon";
 import { SVG_WIDTH, SVG_HEIGHT, findAlignmentGuide, findSizeMatchGuide } from "../../utils/alignmentGuides";
 
-const ICONS = { stairs: StairsIcon, elevator: ElevatorIcon };
+const ICONS = { stairs: StairsIcon, elevator: ElevatorIcon, escalator: EscalatorIcon };
 
 // 계단/엘리베이터 — 문(DoorLayer)처럼 방(room)과 무관한 순수 구조 심볼이다. 사각형 방을
 // 그리듯 드래그로 폴리곤을 잡지만, zones/beds/sensors/status 같은 방 데이터는 없다.

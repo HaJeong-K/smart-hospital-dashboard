@@ -93,5 +93,8 @@ export function getDoorGeometry(door) {
         radius: w,
         // 경첩 → 문짝 끝 → 닫힘 위치를 잇는 부채꼴 호(quarter arc)
         arcPath: `M ${leafX} ${leafY} A ${w} ${w} 0 0 0 ${closedX} ${closedY}`,
+        // 경첩→문짝→열림 궤적을 하나의 연속된 선(hook 모양)으로 그리기 위한 path.
+        // 참고 이미지(door.png)처럼 점/파선 없이 매끄러운 단일 선으로 표현한다.
+        glyphPath: `M ${hx} ${hy} L ${leafX} ${leafY} A ${w} ${w} 0 0 0 ${closedX} ${closedY}`,
     };
 }

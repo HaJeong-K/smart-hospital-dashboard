@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
     UserRound,
     HeartPulse,
@@ -14,6 +13,7 @@ import {
 import { useDashboardStore } from "../../store/useDashboardStore";
 import { mockVitals } from "../../utils/stats";
 import { STATUS_META } from "../../data/floorsData";
+import PatientDetailModal from "./PatientDetailModal";
 
 function BedEditForm({ floorId, roomId, bed, onDone }) {
     const updateBedPatient = useDashboardStore((s) => s.updateBedPatient);
@@ -76,21 +76,18 @@ function BedEditForm({ floorId, roomId, bed, onDone }) {
 }
 
 function PatientPanel({ floorId, room }) {
-    const navigate = useNavigate();
     const resolveAllForRoom = useDashboardStore((s) => s.resolveAllForRoom);
     const alarms = useDashboardStore((s) => s.alarms);
-    const requestPatientDetail = useDashboardStore((s) => s.requestPatientDetail);
+    const floors = useDashboardStore((s) => s.hospital.floors);
     const [editingBedId, setEditingBedId] = useState(null);
+    // 확대 아이콘 — 예전에는 "환자 관리" 탭으로 이동시켰지만, 대시보드를 벗어나지 않도록
+    // 같은 상세 모달(PatientDetailModal)을 Monitoring 화면 위에 그대로 띄운다.
+    const [showDetail, setShowDetail] = useState(false);
 
-    // Monitoring 패널의 확대 아이콘 — "환자 관리" 탭으로 이동하면서 지금 보고 있는
-    // 호실의 상세 모달이 자동으로 열리도록 store에 1회성 요청을 남겨둔다.
-    const openInPatientsManager = () => {
-        if (!room) return;
-        requestPatientDetail(floorId, room.id);
-        navigate("/patients");
-    };
-
-    useEffect(() => setEditingBedId(null), [room?.id]);
+    useEffect(() => {
+        setEditingBedId(null);
+        setShowDetail(false);
+    }, [room?.id]);
 
     if (!room) {
         // 이전에는 이 빈 상태(.patient-empty 및 하위 클래스들)에 대한 CSS가 전혀 없어서
@@ -112,6 +109,7 @@ function PatientPanel({ floorId, room }) {
     const isPatientRoom = room.type === "patient";
     const roomAlarms = alarms.filter((a) => a.floorId === floorId && a.roomId === room.id);
     const occupied = isPatientRoom ? room.beds.filter((b) => b.patient).length : 0;
+    const floor = floors.find((f) => f.id === floorId) || null;
 
     return (
         <div className="patient-panel">
@@ -135,13 +133,17 @@ function PatientPanel({ floorId, room }) {
 
                 <button
                     className="patient-panel-expand-btn"
-                    onClick={openInPatientsManager}
-                    title="환자 관리에서 이 호실 상세 보기"
+                    onClick={() => setShowDetail(true)}
+                    title="이 호실 상세 보기"
                 >
                     <Maximize2 size={16} />
                 </button>
 
             </div>
+
+            {showDetail && (
+                <PatientDetailModal room={room} floor={floor} onClose={() => setShowDetail(false)} />
+            )}
 
             {/* 병상이 많은 다인실(최대 8인실)도 전부 스크롤로 확인할 수 있도록
                 헤더 아래 내용 전체를 별도 스크롤 영역으로 감싼다. (기존에는 패널 높이가

@@ -10,6 +10,7 @@ import {
     BedDouble,
     SquarePen,
     Image,
+    ImageOff,
     ChevronRight,
 } from "lucide-react";
 
@@ -123,6 +124,37 @@ function FloorManager({
                         ...floor,
 
                         floorMap: { ...(floor.floorMap || { type: "image", width: 1000, height: 700 }), src },
+
+                    }
+
+                    : floor
+
+            ),
+
+        }));
+
+    };
+
+    // 평면도 이미지를 넣고 Floor Editor에서 방/벽/문을 다 그린 뒤에는, 배경 이미지만
+    // 떼어내고 싶을 때가 있다(예: 저작권/보안상 원본 도면을 최종 화면에 남기지 않으려는
+    // 경우) — floorMap.src만 비우고 rooms/walls/doors/structures는 건드리지 않는다.
+    const removeFloorImage = (id) => {
+
+        if (!window.confirm("평면도 이미지를 제거하시겠습니까? 그려둔 방/벽/문은 그대로 유지됩니다.")) return;
+
+        setHospital(prev => ({
+
+            ...prev,
+
+            floors: prev.floors.map(floor =>
+
+                floor.id === id
+
+                    ? {
+
+                        ...floor,
+
+                        floorMap: { ...(floor.floorMap || { type: "image", width: 1000, height: 700 }), src: null },
 
                     }
 
@@ -319,6 +351,16 @@ function FloorManager({
                                     >
                                         <Upload size={16} />
                                         평면도
+                                    </button>
+
+                                    <button
+                                        className="toolbar-btn"
+                                        onClick={() => removeFloorImage(floor.id)}
+                                        disabled={!floor.floorMap?.src}
+                                        title="평면도 이미지만 제거합니다 (그려둔 방/벽/문은 유지됩니다)"
+                                    >
+                                        <ImageOff size={16} />
+                                        평면도 제거
                                     </button>
 
                                     <button

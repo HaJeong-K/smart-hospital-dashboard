@@ -33,6 +33,7 @@ function FloorEditor() {
 
     const floors = useDashboardStore((s) => s.hospital.floors);
     const saveFloorRooms = useDashboardStore((s) => s.saveFloorRooms);
+    const setHospital = useDashboardStore((s) => s.setHospital);
 
     // store에 이미 존재하는 층이면 그 데이터가 최신 정본(正本)이다.
     // (새로 만든 층으로 처음 진입하는 극히 드문 케이스에 한해 router state로 폴백)
@@ -48,9 +49,9 @@ function FloorEditor() {
             structures: [],
         };
 
-    const [background, setBackground] = useState(
-        floor.floorMap?.src || floor.image || null
-    );
+    // 평면도 업로드/제거는 이제 설정 > 병원·층·병동 관리에서만 가능하다 — Floor Editor는
+    // store에 저장된 배경 이미지를 그대로 읽어서 그 위에 그리기만 한다(읽기 전용).
+    const background = floor.floorMap?.src || floor.image || null;
 
     const [rooms, setRooms] = useState(
         floor.rooms
@@ -125,6 +126,20 @@ function FloorEditor() {
         saveFloorRooms(floorId, rooms, { src: background }, walls, doors, structures);
 
         alert("저장되었습니다. 대시보드에도 즉시 반영됩니다.");
+
+    };
+
+    // 층 이름은 방 배치(rooms/walls/doors)와 달리 "저장" 버튼을 눌러야 반영되는 초안이
+    // 아니라, 설정 > 병원·층·병동 관리(FloorManager)의 이름 변경과 동일하게 즉시 store에
+    // 반영한다 — 단순 메타데이터라 draft 개념을 둘 이유가 없다.
+    const renameFloor = (value) => {
+
+        setHospital((prev) => ({
+            ...prev,
+            floors: prev.floors.map((f) =>
+                f.id === floorId ? { ...f, name: value } : f
+            ),
+        }));
 
     };
 
@@ -294,11 +309,12 @@ function FloorEditor() {
 
                     <Building2 size={18} />
 
-                    <strong>
-
-                        {floor.name}
-
-                    </strong>
+                    <input
+                        className="editor-floor-name-input"
+                        value={floor.name}
+                        onChange={(e) => renameFloor(e.target.value)}
+                        placeholder="층 이름"
+                    />
 
                 </div>
 
@@ -321,8 +337,6 @@ function FloorEditor() {
             </div>
 
             <EditorToolbar
-
-                setBackground={setBackground}
 
                 rooms={rooms}
 

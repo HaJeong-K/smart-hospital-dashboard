@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import {
     ShieldAlert,
     HeartPulse,
@@ -9,15 +8,13 @@ import {
     TriangleAlert,
     Eye,
     EyeOff,
-    Search,
 } from "lucide-react";
 
 import { useDashboardStore } from "../store/useDashboardStore";
 import { formatDateTime } from "../utils/stats";
-import { RESOLUTION_LABEL, ALARM_TYPE_TO_STATUS } from "../data/floorsData";
+import { ALARM_TYPE_TO_STATUS } from "../data/floorsData";
 
 const TYPE_ICON = { fall: ShieldAlert, breath: HeartPulse, inactivity: MoonStar, sensor: Radar };
-const RESOLUTION_BADGE = { confirmed: "success", false_alarm: "neutral" };
 
 // 알람 심각도 분류 — 낙상(danger)=Critical, 호흡이상(warning)=Warning,
 // 움직임없음/센서오류(inactive/sensor)=Info. 기존 5단계 상태 색상 규칙은 그대로 두고
@@ -26,31 +23,16 @@ const SEVERITY_LABEL = { danger: "Critical", warning: "Warning", inactive: "Info
 const SEVERITY_CSS = { danger: "danger", warning: "warning", inactive: "info", sensor: "info" };
 
 // 알람 관리 화면 — 실시간 알람 목록 + Critical/Warning/Info 심각도 분류 + 확인(ACK) +
-// 처리완료 상태 관리(정상 해제/오탐) + 이벤트 이력 조회/검색.
+// 처리완료 상태 관리(정상 해제/오탐). 과거 이력을 날짜로 조회하는 기능은 "과거 이력"
+// (`/logs`, `LogAnalysis.jsx`) 화면으로 분리했다 — 여기는 "지금 활성 알람을 처리"하는
+// 실시간 대응용 화면이라 사후 조회 용도와 목적이 달라 분리함.
 // "센서 이상"은 더 이상 별도 처리 액션/이력 분류가 아니다 — 오탐 처리 시 해당 구역에
 // 누적되는 값은 통계 보고서의 "센서 점검 필요 구역"에서 확인한다.
 function AlarmsManager() {
     const alarms = useDashboardStore((s) => s.alarms);
-    const eventLog = useDashboardStore((s) => s.eventLog);
     const resolveAlarm = useDashboardStore((s) => s.resolveAlarm);
     const ackAlarm = useDashboardStore((s) => s.ackAlarm);
     const triggerRandomAlarm = useDashboardStore((s) => s.triggerRandomAlarm);
-
-    const [historyFilter, setHistoryFilter] = useState("all");
-    const [historyKeyword, setHistoryKeyword] = useState("");
-
-    const filteredLog = useMemo(() => {
-        let list = eventLog;
-        if (historyFilter === "occurred") list = list.filter((e) => e.action === "occurred");
-        else if (historyFilter !== "all") list = list.filter((e) => e.action === "resolved" && e.resolution === historyFilter);
-
-        const q = historyKeyword.trim().toLowerCase();
-        if (!q) return list;
-        return list.filter((e) => {
-            const haystack = `${e.floorName} ${e.roomNo} ${e.zoneLabel} ${e.patientName || ""} ${e.typeLabel}`.toLowerCase();
-            return haystack.includes(q);
-        });
-    }, [eventLog, historyFilter, historyKeyword]);
 
     return (
         <div className="page-wrap">
@@ -160,71 +142,6 @@ function AlarmsManager() {
                                     </tr>
                                 );
                             })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div className="panel-section">
-                <div className="page-title" style={{ marginBottom: 12 }}>
-                    <h3 style={{ margin: 0 }}>이벤트 이력</h3>
-                    <div className="chip-group">
-                        {[
-                            ["all", "전체"],
-                            ["occurred", "발생"],
-                            ["confirmed", "정상 해제"],
-                            ["false_alarm", "오탐"],
-                        ].map(([key, label]) => (
-                            <button
-                                key={key}
-                                className={`chip ${historyFilter === key ? "active" : ""}`}
-                                onClick={() => setHistoryFilter(key)}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="search-bar toolbar-search" style={{ marginBottom: 14, width: 320 }}>
-                    <Search size={16} />
-                    <input
-                        placeholder="호실 / 구역 / 환자명 검색"
-                        value={historyKeyword}
-                        onChange={(e) => setHistoryKeyword(e.target.value)}
-                    />
-                </div>
-
-                <div className="table-wrap">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>시각</th>
-                                <th>위치</th>
-                                <th>내용</th>
-                                <th>구분</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLog.length === 0 && (
-                                <tr><td colSpan={4} className="room-empty">이력이 없습니다.</td></tr>
-                            )}
-                            {filteredLog.slice(0, 150).map((e) => (
-                                <tr key={`${e.id}-${e.action}`}>
-                                    <td>{formatDateTime(e.time)}</td>
-                                    <td>{e.floorName} {e.roomNo} · {e.zoneLabel}</td>
-                                    <td>{e.typeLabel}{e.patientName ? ` · ${e.patientName}` : ""}</td>
-                                    <td>
-                                        {e.action === "occurred" ? (
-                                            <span className="badge-tag danger">발생</span>
-                                        ) : (
-                                            <span className={`badge-tag ${RESOLUTION_BADGE[e.resolution] || "success"}`}>
-                                                {RESOLUTION_LABEL[e.resolution]}
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
                         </tbody>
                     </table>
                 </div>

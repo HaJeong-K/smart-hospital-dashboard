@@ -72,6 +72,8 @@ function FloorCanvas({
 
     floor,
 
+    statusFilter,
+
     onRoomClick,
 
 }){
@@ -114,6 +116,8 @@ function FloorCanvas({
 
                     rooms={floor.rooms}
 
+                    statusFilter={statusFilter}
+
                     onRoomClick={onRoomClick}
 
                     viewBox={viewBox}
@@ -123,6 +127,8 @@ function FloorCanvas({
                 <SensorOverlay
 
                     rooms={floor.rooms}
+
+                    statusFilter={statusFilter}
 
                 />
 

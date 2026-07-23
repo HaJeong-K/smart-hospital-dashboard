@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useDashboardStore } from "../store/useDashboardStore";
 
@@ -15,8 +15,6 @@ function PatientsManager() {
     const floors = useDashboardStore((s) => s.hospital.floors);
     const selectedFloorId = useDashboardStore((s) => s.selectedFloorId);
     const setSelectedFloorId = useDashboardStore((s) => s.setSelectedFloorId);
-    const pendingPatientDetail = useDashboardStore((s) => s.pendingPatientDetail);
-    const clearPendingPatientDetail = useDashboardStore((s) => s.clearPendingPatientDetail);
 
     const [detailRoom, setDetailRoom] = useState(null);
 
@@ -24,16 +22,6 @@ function PatientsManager() {
         () => floors.find((f) => f.id === selectedFloorId) || floors[0] || null,
         [floors, selectedFloorId],
     );
-
-    // Monitoring의 환자 정보 패널에서 확대 아이콘을 눌러 넘어온 경우, 그 호실의 상세
-    // 모달을 자동으로 연다. 1회성 요청이므로 열자마자 store에서 바로 비운다.
-    useEffect(() => {
-        if (!pendingPatientDetail) return;
-        const targetFloor = floors.find((f) => f.id === pendingPatientDetail.floorId);
-        const targetRoom = targetFloor?.rooms.find((r) => r.id === pendingPatientDetail.roomId);
-        if (targetRoom) setDetailRoom(targetRoom);
-        clearPendingPatientDetail();
-    }, [pendingPatientDetail, floors, clearPendingPatientDetail]);
 
     if (!floor) {
         return (

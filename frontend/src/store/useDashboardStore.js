@@ -88,11 +88,6 @@ export const useDashboardStore = create(
         (set, get) => ({
             hospital: buildInitialHospital(),
             selectedFloorId: "3F",
-            selectedRoomId: null,
-            // Monitoring에서 환자 정보 패널의 확대 아이콘을 눌렀을 때, "환자 관리" 탭으로 이동한
-            // 직후 어떤 호실의 상세 모달을 자동으로 열어야 하는지 담아두는 1회성 값.
-            // PatientsManager가 마운트/갱신 시 이 값을 읽어 모달을 연 뒤 즉시 비운다.
-            pendingPatientDetail: null,
             connectionStatus: "connected",
             alarms: [], // 활성(미해제) 알람
             eventLog: [], // 발생/해제 이력 (알람 관리 화면용)
@@ -117,14 +112,8 @@ export const useDashboardStore = create(
                 }));
             },
 
-            setSelectedFloorId: (floorId) => set({ selectedFloorId: floorId, selectedRoomId: null }),
-            setSelectedRoomId: (roomId) => set({ selectedRoomId: roomId }),
+            setSelectedFloorId: (floorId) => set({ selectedFloorId: floorId }),
 
-            // Monitoring의 환자 정보 패널 → "환자 관리로 이동해서 이 호실 상세 열기" 버튼용.
-            requestPatientDetail: (floorId, roomId) => {
-                set({ selectedFloorId: floorId, pendingPatientDetail: { floorId, roomId } });
-            },
-            clearPendingPatientDetail: () => set({ pendingPatientDetail: null }),
             toggleConnection: () =>
                 set((s) => ({ connectionStatus: s.connectionStatus === "connected" ? "disconnected" : "connected" })),
 
@@ -395,7 +384,6 @@ export const useDashboardStore = create(
                 set({
                     hospital: buildInitialHospital(),
                     selectedFloorId: "3F",
-                    selectedRoomId: null,
                     connectionStatus: "connected",
                     alarms: [],
                     eventLog: [],

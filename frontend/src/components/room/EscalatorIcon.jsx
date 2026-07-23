@@ -1,14 +1,12 @@
-import stairsIconSrc from "../../assets/icons/stairs.png";
+import escalatorIconSrc from "../../assets/icons/escalator.png";
 
 const CANVAS_W = 1000;
 const CANVAS_H = 700;
 
-// room.type === "stairs"인 방 위에 겹쳐 그리는 계단 기호 — 사용자가 제공한 참고
-// 아이콘(계단.png)을 그대로 사용한다(직접 그린 SVG 대체 없이 이미지 원본을 씀).
-// 방 폴리곤의 바운딩 박스 중심에 정사각형으로 맞춰 배치하고, 라이트 모드에서는
-// 원본(검정 선) 그대로, 다크 모드에서는 CSS(.raster-structure-icon)에서
-// filter:invert(1)로 흰 선으로 반전해서 보이도록 한다.
-function StairsIcon({ room }) {
+// room.type === "escalator"인 구조물 위에 겹쳐 그리는 에스컬레이터 기호 — 사용자가
+// 제공한 참고 아이콘(에스컬레이터.png)을 그대로 사용한다. StairsIcon과 동일하게
+// 방 폴리곤의 바운딩 박스 중심에 정사각형으로 맞춰 배치한다.
+function EscalatorIcon({ room }) {
     const xs = room.polygon.map(([x]) => x * CANVAS_W);
     const ys = room.polygon.map(([, y]) => y * CANVAS_H);
     const minX = Math.min(...xs);
@@ -26,7 +24,7 @@ function StairsIcon({ room }) {
     return (
         <image
             className="raster-structure-icon"
-            href={stairsIconSrc}
+            href={escalatorIconSrc}
             x={cx - size / 2}
             y={cy - size / 2}
             width={size}
@@ -37,4 +35,4 @@ function StairsIcon({ room }) {
     );
 }
 
-export default StairsIcon;
+export default EscalatorIcon;
